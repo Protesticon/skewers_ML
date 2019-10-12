@@ -1,3 +1,4 @@
 # skewers_ML
-something about skewers  
-test repo
+To pridict Lya skewers directly from simulated DM
+
+File names are: name, version, and simualtion.  
