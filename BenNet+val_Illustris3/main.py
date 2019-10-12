@@ -1,7 +1,8 @@
-import numpy as np
 from pathlib import Path
+import numpy as np
 from more_itertools import chunked
 from datetime import date
+import torch
 
 from data_loader import *
 from model import *
@@ -9,7 +10,7 @@ from train import *
 from val import *
 
 # Path and data file name
-folder  = Path('../Illustris3/')
+folder  = Path.cwd() / 'Illustris3'
 DM_name = ['DMdelta_Illustris3_L75_N600.fits', 
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
@@ -28,6 +29,7 @@ if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
 learning_rate = 0.0001
 num_epochs = 10
+today = date.today()
 
 
 
@@ -38,6 +40,7 @@ print('Using device:', device)
 
 
 # load dark matter data
+print('Loading dark matter...')
 DM_general = load_DM(folder, DM_name)
 # basic paramters
 DM_param.pix  = len(DM_general[0])
@@ -47,9 +50,11 @@ DM_param.reso = DM_param.len / DM_param.pix # in kpc/h
 if DM_general.shape[1]<train_size.min():
     raise ValueError('DarkMatter cube size',
         DM_general.shape, 'is too small for train size', train_size, '.')
+DM_general = torch.tensor(DM_general).float()
 
 
 # load skewers
+print('Loading skewers...')
 ske, block = load_skewers(folder, ske_name, DM_param.reso)
 # pre-procession
 ske = 1-np.exp(-1*ske)
@@ -65,12 +70,10 @@ ske_len = ske.shape[1]
 
 
 # divide the sample to training, validation set, and test set.
+print('setting training and validation set...')
 id_seperate = divide_data(ske, train_len, val_len, test_len)
 train_ske, train_block = load_train(ske, block, id_seperate)
 val_ske,   val_block   = load_val(ske, block, id_seperate)
-with open("id_seperate.txt","w") as f:
-    f.writelines(id_seperate.astype('str'))
-f.close()
 del id_seperate
 
 # flatten the optical depth data and chunk in batches
@@ -86,7 +89,6 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 
 # Train the model
-today = date.today()
 curr_lr = learning_rate
 start_time = time.time()
 
@@ -106,7 +108,9 @@ for epoch in range(num_epochs):
 
     # remember best prec@1 and save checkpoint if desired
     # is_best = prec1 > best_prec1
-    best_prec1 = max(prec1, best_prec1)
+    if prec1 > best_prec1:
+        best_prec1 = prec1
+        torch.save(model.state_dict(), "./params_Ben_1-e^-tau_x9y9z17_Huber_%s.pkl"%today.strftime("%m/%d/%y"))
 
     print("Epoch Summary: ")
     print("\tEpoch Accuracy: {}".format(prec1))

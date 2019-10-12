@@ -94,9 +94,15 @@ def divide_data(ske, train_len, val_len, test_len):
     randomly selet the training set, validation set, and test set
     '''
     waste_len = ske.shape[0] - train_len - val_len - test_len
-    id_seperate = np.array( np.ones(train_len), np.ones(val_len)*2,
-         np.ones(test_len)*3, np.zeros(waste_len) )
+    train_arr = np.ones(train_len)
+    val_arr   = np.ones(val_len)*2
+    test_arr  = np.ones(test_len)*3
+    waste_arr = np.zeros(waste_len)
+    id_seperate = np.concatenate((train_arr, val_arr, test_arr, waste_arr), axis=0)
     np.random.shuffle( id_seperate )
+    with open("id_seperate.txt","w") as f:
+        f.writelines(str(id_seperate).replace('[','').replace(']',''))
+    f.close()
 
     return id_seperate
 

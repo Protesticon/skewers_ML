@@ -12,19 +12,17 @@ Training process. For missed parameters plz check the main.py.
 def train(train_ske, train_block, ske_len, DM_general, DM_param,
         batch_size, train_size, model, criterion, optimizer,
         num_epochs, epoch, device, start_time, today):
-
     '''
     Global variables: len_ske, DM_param, start_time, date
     Possible: batch_size, train_size, num_epochs, device
     '''
-
     losses = AverageMeter()
     top1 = AverageMeter()
     top5 = AverageMeter()
-
     # switch to train mode
     model.train()
 
+    print(train_ske.shape)
     for i, train_data in enumerate(train_ske, 0):
         # get the targets;
         targets = train_data.reshape((batch_size, 1)).to(device)
