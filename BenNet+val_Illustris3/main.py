@@ -10,7 +10,7 @@ from train import *
 from val import *
 
 # Path and data file name
-folder  = Path.cwd() / 'Illustris3'
+folder  = Path.cwd().parent / 'Illustris3'
 DM_name = ['DMdelta_Illustris3_L75_N600.fits', 
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
