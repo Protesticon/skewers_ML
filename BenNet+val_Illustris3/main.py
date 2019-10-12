@@ -110,7 +110,7 @@ for epoch in range(num_epochs):
     # is_best = prec1 > best_prec1
     if losses < lowest_losses:
         lowest_losses = losses
-        torch.save(model.state_dict(), "./params_Ben_1-e^-tau_x9y9z17_Huber_%s.pkl"%today.strftime("%m/%d/%y"))
+        torch.save(model.state_dict(), "./params_Ben_1-e^-tau_x9y9z17_Huber_%s.pkl"%today.strftime("%m-%d-%y"))
 
     print("Epoch Summary: ")
     print("\tEpoch loss: {}".format(losses))
