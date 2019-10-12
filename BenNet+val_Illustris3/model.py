@@ -122,7 +122,8 @@ class AverageMeter(object):
         self.avg = self.sum / self.count
 
 
-
+'''
+# only for classification, not working here.
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
     with torch.no_grad():
@@ -138,3 +139,4 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+'''

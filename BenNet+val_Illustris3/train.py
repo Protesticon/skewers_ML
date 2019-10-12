@@ -2,7 +2,7 @@ import time
 import numpy as np
 import torch
 
-from model import AverageMeter, accuracy
+from model import AverageMeter
 from data_loader import make_batch_grids
 
 '''
@@ -17,12 +17,9 @@ def train(train_ske, train_block, ske_len, DM_general, DM_param,
     Possible: batch_size, train_size, num_epochs, device
     '''
     losses = AverageMeter()
-    top1 = AverageMeter()
-    top5 = AverageMeter()
     # switch to train mode
     model.train()
 
-    print(train_ske.shape)
     for i, train_data in enumerate(train_ske, 0):
         # get the targets;
         targets = train_data.reshape((batch_size, 1)).to(device)
@@ -38,11 +35,8 @@ def train(train_ske, train_block, ske_len, DM_general, DM_param,
         outputs = model(inputs)
         loss = criterion(outputs, targets)
         
-        # measure accuracy and record loss
-        prec1, prec5 = accuracy(outputs, targets, topk=(1, 5))
+        # record loss
         losses.update(loss.item(), inputs.size(0))
-        top1.update(prec1[0], inputs.size(0))
-        top5.update(prec5[0], inputs.size(0))
 
         # zero the parameter gradients
         optimizer.zero_grad()

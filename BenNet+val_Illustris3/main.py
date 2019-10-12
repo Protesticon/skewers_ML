@@ -1,7 +1,7 @@
 from pathlib import Path
-import numpy as np
-from more_itertools import chunked
 from datetime import date
+from more_itertools import chunked
+import numpy as np
 import torch
 
 from data_loader import *
@@ -25,11 +25,11 @@ val_len    = 900
 test_len   = 400
 train_size = np.array([9, 9, 17]) # x, y, z respctively
 batch_size = 40
-if ~(train_size%2).all():
-    raise ValueError('train size scannot be even.')
 learning_rate = 0.0001
 num_epochs = 10
 today = date.today()
+if ~(train_size%2).all():
+    raise ValueError('train size scannot be even.')
 
 
 
@@ -92,7 +92,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 curr_lr = learning_rate
 start_time = time.time()
 
-best_prec1 = 0
+lowest_losses = 999.0
 
 for epoch in range(num_epochs):
     # train for one epoch
@@ -103,15 +103,45 @@ for epoch in range(num_epochs):
 
     # evaluate on validation set
     print("Begin Validation @ Epoch {}".format(epoch+1))
-    prec1 = validate(val_ske, val_block, ske_len, DM_general, DM_param,
-        batch_size, train_size, model, criterion, device, start_time)
+    losses = validate(val_ske, val_block, ske_len, DM_general, DM_param,
+            batch_size, train_size, model, criterion, device, start_time)
 
     # remember best prec@1 and save checkpoint if desired
     # is_best = prec1 > best_prec1
-    if prec1 > best_prec1:
-        best_prec1 = prec1
+    if losses < lowest_losses:
+        lowest_losses = losses
         torch.save(model.state_dict(), "./params_Ben_1-e^-tau_x9y9z17_Huber_%s.pkl"%today.strftime("%m/%d/%y"))
+
+    print("Epoch Summary: ")
+    print("\tEpoch loss: {}".format(losses))
+    print("\Lowest loss: {}".format(lowest_losses))
+
+
+
+
+'''
+best_prec1 = 0
+
+for epoch in range(num_epochs):
+    # Set epoch count for DistributedSampler
+    train_sampler.set_epoch(epoch)
+
+    # Adjust learning rate according to schedule
+    adjust_learning_rate(starting_lr, optimizer, epoch)
+
+    # train for one epoch
+    print("\nBegin Training Epoch {}".format(epoch+1))
+    train(train_loader, model, criterion, optimizer, epoch)
+
+    # evaluate on validation set
+    print("Begin Validation @ Epoch {}".format(epoch+1))
+    prec1 = validate(val_loader, model, criterion)
+
+    # remember best prec@1 and save checkpoint if desired
+    # is_best = prec1 > best_prec1
+    best_prec1 = max(prec1, best_prec1)
 
     print("Epoch Summary: ")
     print("\tEpoch Accuracy: {}".format(prec1))
     print("\tBest Accuracy: {}".format(best_prec1))
+'''
