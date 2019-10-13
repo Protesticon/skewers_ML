@@ -99,24 +99,26 @@ lowest_losses = 999.0
 for epoch in range(num_epochs):
     # train for one epoch
     print("\nBegin Training Epoch {}".format(epoch+1))
-    train(train_ske, train_block, ske_len, DM_general, DM_param,
-        batch_size, train_size, model, criterion, optimizer,
-        num_epochs, epoch, device, start_time, today)
+    train_losses = train(train_ske, train_block, ske_len, DM_general, DM_param,
+                    batch_size, train_size, model, criterion, optimizer,
+                    num_epochs, epoch, device, start_time, today)
+    print("Epoch Summary: ")
+    print("\tEpoch loss: {}".format(train_losses))
 
     # evaluate on validation set
-    print("Begin Validation @ Epoch {}".format(epoch+1))
-    losses = validate(val_ske, val_block, ske_len, DM_general, DM_param,
-            batch_size, train_size, model, criterion, device, start_time)
+    print("\nBegin Validation @ Epoch {}".format(epoch+1))
+    val_losses = validate(val_ske, val_block, ske_len, DM_general, DM_param,
+                batch_size, train_size, model, criterion, device, start_time)
 
     # remember best prec@1 and save checkpoint if desired
     # is_best = prec1 > best_prec1
-    if losses < lowest_losses:
-        lowest_losses = losses
+    if val_losses < lowest_losses:
+        lowest_losses = val_losses
         torch.save(model.state_dict(), "./params_Ben_1-e^-tau_x9y9z17_Huber_%s.pkl"%today.strftime("%m-%d-%y"))
 
     print("Epoch Summary: ")
-    print("\tEpoch loss: {}".format(losses))
-    print("\Lowest loss: {}".format(lowest_losses))
+    print("\tEpoch loss: {}".format(val_losses))
+    print("\tLowest loss: {}".format(lowest_losses))
 
 
 

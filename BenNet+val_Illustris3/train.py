@@ -49,6 +49,8 @@ def train(train_ske, train_block, ske_len, DM_general, DM_param,
         if (i+1) % 10000 ==0: #train_ske.shape[0]
             print ("SAVING MODEL!")
             torch.save(model.state_dict(), "./HyPhy_%s"%today.strftime("%m-%d-%y"))
+    
+    return losses.avg
 
 
 '''
