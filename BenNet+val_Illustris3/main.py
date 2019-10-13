@@ -79,6 +79,8 @@ del id_seperate
 # flatten the optical depth data and chunk in batches
 train_ske = train_ske.flatten()
 train_ske = torch.FloatTensor( list(chunked( train_ske, batch_size )) )
+val_ske   = val_ske.flatten()
+val_ske   = torch.FloatTensor( list(chunked( val_ske,   batch_size )) )
 
 
 # load model
