@@ -108,8 +108,6 @@ for epoch in range(num_epochs):
     train_losses = train(train_ske, train_block, ske_len, DM_general, DM_param,
                     batch_size, train_size, model, criterion, optimizer,
                     num_epochs, epoch, device, start_time)
-    print("Epoch Summary: ")
-    print("\tEpoch training loss: {}".format(train_losses))
     with open('history.txt', 'a') as f:
         f.writelines('\nEpoch {}/{}:'.format(epoch, num_epochs))
         f.writelines('\n\t Training losses: %s,  '%str(train_losses)\
@@ -129,6 +127,7 @@ for epoch in range(num_epochs):
              "./params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime()))
 
     print("Epoch Summary: ")
+    print("\tEpoch training loss: {}".format(train_losses))
     print("\tEpoch validation loss: {}".format(val_losses))
     print("\tLowest validation loss: {}".format(lowest_losses))
     with open('history.txt', 'a') as f:
