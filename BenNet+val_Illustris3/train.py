@@ -44,7 +44,7 @@ def train(train_ske, train_block, ske_len, DM_general, DM_param,
         optimizer.step()
         
         if (i+1) % 100 == 0:
-            print ("Epoch [{}/{}], Step [{}/{}] Loss: {:.4f},Time: {:.4f}"
+            print ("Epoch [{}/{}], Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
                    .format(epoch+1, num_epochs, i+1, train_ske.shape[0], loss.item(), time.time()-start_time))
         if (i+1) % 10000 ==0: #train_ske.shape[0]
             print ("SAVING MODEL!")
