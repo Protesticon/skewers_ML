@@ -1,5 +1,4 @@
 from pathlib import Path
-from more_itertools import chunked
 import time
 import numpy as np
 import torch
@@ -20,7 +19,7 @@ ske_name = 'spectra_Illustris3_N600.dat'
 
 
 # hyper parameters
-train_len  = 90000
+train_len  = 10000
 val_len    = 900
 test_len   = 400
 train_size = np.array([9, 9, 17]) # x, y, z respctively
@@ -78,7 +77,6 @@ val_ske = torch.FloatTensor(val_ske)
 del id_seperate
 
 
-
 # load model
 model = get_residual_network().float().to(device)
 # loss and optimizer
@@ -93,7 +91,7 @@ start_time = time.time()
 lowest_losses = 999.0
 
 print('\nStart Training:')
-with open('\n\n\nhistory.txt', 'a') as f:
+with open('history.txt', 'a') as f:
     f.writelines('\nTraining History Record:')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
@@ -112,7 +110,7 @@ for epoch in range(num_epochs):
                     num_epochs, epoch, device, start_time)
     print("Epoch Summary: ")
     print("\tEpoch training loss: {}".format(train_losses))
-    with open('losses.txt', 'a') as f:
+    with open('history.txt', 'a') as f:
         f.writelines('\nEpoch {}/{}:'.format(epoch, num_epochs))
         f.writelines('\n\t Training losses: %s,  '%str(train_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
@@ -133,7 +131,7 @@ for epoch in range(num_epochs):
     print("Epoch Summary: ")
     print("\tEpoch validation loss: {}".format(val_losses))
     print("\tLowest validation loss: {}".format(lowest_losses))
-    with open('losses.txt', 'a') as f:
+    with open('history.txt', 'a') as f:
         f.writelines('\n\t Validation losses: %s,  '%str(val_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
     f.close()
@@ -167,3 +165,4 @@ for epoch in range(num_epochs):
     print("\tEpoch Accuracy: {}".format(prec1))
     print("\tBest Accuracy: {}".format(best_prec1))
 '''
+
