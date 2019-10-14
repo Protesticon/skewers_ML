@@ -1,6 +1,6 @@
 from pathlib import Path
-from datetime import date
 from more_itertools import chunked
+import time
 import numpy as np
 import torch
 
@@ -27,7 +27,6 @@ train_size = np.array([9, 9, 17]) # x, y, z respctively
 batch_size = 40
 learning_rate = 0.0001
 num_epochs = 10
-today = date.today()
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
 
@@ -96,14 +95,31 @@ start_time = time.time()
 
 lowest_losses = 999.0
 
+print('\n\n\nStart Training:')
+with open('history.txt', 'a') as f:
+    f.writelines('\nTraining History Record:')
+    f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
+    f.writelines('\nVal Frac: {}/{}'.format(val_len, len(ske.flatten())))
+    f.writelines('\nInput Size: %s'%str(train_size))
+    f.writelines('\nLoss: %s'%criterion.__class__.__name__)
+    f.writelines('\nOptimizer: %s'%optimizer.__class__.__name__)
+    f.writelines('\nLearning Rate: %s'%str(learning_rate))
+f.close()
+
 for epoch in range(num_epochs):
     # train for one epoch
     print("\nBegin Training Epoch {}".format(epoch+1))
     train_losses = train(train_ske, train_block, ske_len, DM_general, DM_param,
                     batch_size, train_size, model, criterion, optimizer,
-                    num_epochs, epoch, device, start_time, today)
+                    num_epochs, epoch, device, start_time)
     print("Epoch Summary: ")
-    print("\tEpoch loss: {}".format(train_losses))
+    print("\tEpoch training loss: {}".format(train_losses))
+    with open('losses.txt', 'a') as f:
+        f.writelines('\nEpoch {}/{}:'.format(epoch, num_epochs))
+        f.writelines('\n\t Training losses: %s,  '%str(train_losses)\
+            +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
+    f.close()
 
     # evaluate on validation set
     print("\nBegin Validation @ Epoch {}".format(epoch+1))
@@ -114,11 +130,16 @@ for epoch in range(num_epochs):
     # is_best = prec1 > best_prec1
     if val_losses < lowest_losses:
         lowest_losses = val_losses
-        torch.save(model.state_dict(), "./params_Ben_1-e^-tau_x9y9z17_Huber_%s.pkl"%today.strftime("%m-%d-%y"))
+        torch.save(model.state_dict(),
+             "./params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime()))
 
     print("Epoch Summary: ")
-    print("\tEpoch loss: {}".format(val_losses))
-    print("\tLowest loss: {}".format(lowest_losses))
+    print("\tEpoch validation loss: {}".format(val_losses))
+    print("\tLowest validation loss: {}".format(lowest_losses))
+    with open('losses.txt', 'a') as f:
+        f.writelines('\n\t Validation losses: %s,  '%str(val_losses)\
+            +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
+    f.close()
 
 
 
