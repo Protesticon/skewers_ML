@@ -120,7 +120,7 @@ def load_train(ske, block, id_seperate, batch_size):
     np.random.set_state(state)
     np.random.shuffle( train_ske )
     train_ske = train_ske.flatten()
-    train_ske = torch.FloatTensor( list(chunked( train_ske, batch_size )) )
+    train_ske = list(chunked( train_ske, batch_size ))
 
     return (train_ske, train_block)
 
@@ -138,7 +138,7 @@ def load_val(ske, block, id_seperate, batch_size):
     np.random.set_state(state)
     np.random.shuffle( val_ske )
     val_ske = val_ske.flatten()
-    val_ske = torch.FloatTensor( list(chunked( val_ske, batch_size )) )
+    val_ske = list(chunked( val_ske, batch_size )) 
 
     return (val_ske, val_block)
 

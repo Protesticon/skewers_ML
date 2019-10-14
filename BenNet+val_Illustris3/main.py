@@ -72,8 +72,11 @@ ske_len = ske.shape[1]
 print('Setting training and validation set...')
 id_seperate = divide_data(ske, train_len, val_len, test_len)
 train_ske, train_block = load_train(ske, block, id_seperate, batch_size)
-val_ske,   val_block   = load_val(ske, block, id_seperate, batch_size)
+train_ske = torch.FloatTensor(train_ske)
+val_ske, val_block = load_val(ske, block, id_seperate, batch_size)
+val_ske = torch.FloatTensor(val_ske)
 del id_seperate
+
 
 
 # load model
