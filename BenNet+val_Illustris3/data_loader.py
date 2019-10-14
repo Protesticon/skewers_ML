@@ -77,7 +77,7 @@ def load_DM(Path, FileName):
 
 def load_skewers(Path, FileName, DM_reso):
     '''
-    To load original skewers data in shape of [number, length in pixels]. Generating each coordinate [x, y, 0] simultaneously. Output: skewers and coordinate
+    To load original skewers data in shape of [number, length in pixels]. Generating each coordinate [x, y, 0] simultaneously. Output: skewers and coordinate.
     '''
     # read in skewers
     ske   = np.loadtxt(Path/FileName)
@@ -91,7 +91,7 @@ def load_skewers(Path, FileName, DM_reso):
 
 def divide_data(ske, train_len, val_len, test_len):
     '''
-    randomly selet the training set, validation set, and test set
+    randomly selet the training set, validation set, and test set.
     '''
     waste_len = ske.shape[0] - train_len - val_len - test_len
     train_arr = np.ones(train_len)
@@ -108,44 +108,48 @@ def divide_data(ske, train_len, val_len, test_len):
 
 
 
-def load_train(ske, block, id_seperate):
+def load_train(ske, block, id_seperate, batch_size):
     '''
-    To load and shuffle the training set
+    To load, shuffle and chunk the training set.
     '''
-    train_block = block[id_seperate==1]
-    train_ske   = ske[id_seperate==1]
+    train_block = block[id_seperate == 1]
+    train_ske   = ske[id_seperate == 1]
     np.random.seed(np.random.randint(0,50))
     state = np.random.get_state()
     np.random.shuffle( train_block )
     np.random.set_state(state)
     np.random.shuffle( train_ske )
+    train_ske = train_ske.flatten()
+    train_ske = torch.FloatTensor( list(chunked( train_ske, batch_size )) )
 
     return (train_ske, train_block)
 
 
 
-def load_val(ske, block, id_seperate):
+def load_val(ske, block, id_seperate, batch_size):
     '''
-    To load and shuffle the validation set
+    To load, shuffle and chunk the validation set.
     '''
-    val_block = block[id_seperate==2]
-    val_ske   = ske[id_seperate==2]
+    val_block = block[id_seperate == 2]
+    val_ske   = ske[id_seperate == 2]
     np.random.seed(np.random.randint(0,50))
     state = np.random.get_state()
     np.random.shuffle( val_block )
     np.random.set_state(state)
     np.random.shuffle( val_ske )
+    val_ske = val_ske.flatten()
+    val_ske = torch.FloatTensor( list(chunked( val_ske, batch_size )) )
 
     return (val_ske, val_block)
 
 
 
-def load_test(ske, block, id_seperate):
+def load_test(ske, block, id_seperate, batch_size):
     '''
-    To load and shuffle the test set
+    To load and shuffle the test set.
     '''
-    test_block = block[id_seperate==3]
-    test_ske   = ske[id_seperate==3]
+    test_block = block[id_seperate == 3]
+    test_ske   = ske[id_seperate == 3]
     np.random.seed(np.random.randint(0,50))
     state = np.random.get_state()
     np.random.shuffle( test_block )

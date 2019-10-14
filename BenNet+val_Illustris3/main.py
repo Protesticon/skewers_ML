@@ -71,15 +71,9 @@ ske_len = ske.shape[1]
 # divide the sample to training, validation set, and test set.
 print('Setting training and validation set...')
 id_seperate = divide_data(ske, train_len, val_len, test_len)
-train_ske, train_block = load_train(ske, block, id_seperate)
-val_ske,   val_block   = load_val(ske, block, id_seperate)
+train_ske, train_block = load_train(ske, block, id_seperate, batch_size)
+val_ske,   val_block   = load_val(ske, block, id_seperate, batch_size)
 del id_seperate
-
-# flatten the optical depth data and chunk in batches
-train_ske = train_ske.flatten()
-train_ske = torch.FloatTensor( list(chunked( train_ske, batch_size )) )
-val_ske   = val_ske.flatten()
-val_ske   = torch.FloatTensor( list(chunked( val_ske,   batch_size )) )
 
 
 # load model
@@ -95,8 +89,8 @@ start_time = time.time()
 
 lowest_losses = 999.0
 
-print('\n\n\nStart Training:')
-with open('history.txt', 'a') as f:
+print('\nStart Training:')
+with open('\n\n\nhistory.txt', 'a') as f:
     f.writelines('\nTraining History Record:')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
