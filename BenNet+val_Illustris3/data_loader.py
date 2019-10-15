@@ -90,7 +90,7 @@ def load_skewers(Path, FileName, DM_reso):
 
 
 
-def divide_data(ske, train_len, val_len, test_len):
+def divide_data(ske, train_len, val_len, test_len, localtime):
     '''
     randomly selet the training set, validation set, and test set.
     '''
@@ -101,8 +101,9 @@ def divide_data(ske, train_len, val_len, test_len):
     waste_arr = np.zeros(waste_len)
     id_seperate = np.concatenate((train_arr, val_arr, test_arr, waste_arr), axis=0)
     np.random.shuffle( id_seperate )
-    with open("id_seperate.txt","w") as f:
-        f.writelines(str(id_seperate).replace('[','').replace(']',''))
+    with open("id_seperate/id_seperate_%s.txt"\
+              %time.strftime("%Y-%m-%d_%H:%M:%S", local_time),"w") as f:
+        f.writelines(str(list(id_seperate.astype('int')))[1:-1])
     f.close()
 
     return id_seperate
@@ -151,11 +152,8 @@ def load_test(ske, block, id_seperate, batch_size):
     '''
     test_block = block[id_seperate == 3]
     test_ske   = ske[id_seperate == 3]
-    np.random.seed(np.random.randint(0,50))
-    state = np.random.get_state()
-    np.random.shuffle( test_block )
-    np.random.set_state(state)
-    np.random.shuffle( test_ske )  
+    test_ske = test_ske.flatten()
+    test_ske = list(chunked( test_ske, batch_size )) 
 
     return (test_ske, test_block)
     

@@ -26,7 +26,7 @@ train_size = np.array([9, 9, 17]) # x, y, z respctively
 batch_size = 40
 learning_rate = 0.0001
 num_epochs = 10
-local_time = time.localtime()
+localtime = time.localtime()
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
 
@@ -70,7 +70,7 @@ ske_len = ske.shape[1]
 
 # divide the sample to training, validation set, and test set.
 print('Setting training and validation set...')
-id_seperate = divide_data(ske, train_len, val_len, test_len)
+id_seperate = divide_data(ske, train_len, val_len, test_len, localtime)
 train_ske, train_block = load_train(ske, block, id_seperate, batch_size)
 train_ske = torch.FloatTensor(train_ske)
 val_ske, val_block = load_val(ske, block, id_seperate, batch_size)
@@ -88,12 +88,14 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 # Train the model
 curr_lr = learning_rate
 start_time = time.time()
+val_time   = localtime
 
 lowest_losses = 999.0
+lowest_time   = localtime
 
 print('\nStart Training:')
 with open('history.txt', 'a') as f:
-    f.writelines('\nTraining History Record,')
+    f.writelines('\n\n\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
     f.writelines('\nVal Frac: {}/{}'.format(val_len, len(ske.flatten())))
@@ -108,10 +110,10 @@ for epoch in range(num_epochs):
     print("\nBegin Training Epoch {}".format(epoch+1))
     train_losses = train(train_ske, train_block, ske_len, DM_general, DM_param,
                     batch_size, train_size, model, criterion, optimizer,
-                    num_epochs, epoch, device, start_time)
+                    num_epochs, epoch, device, start_time, localtime)
     with open('history.txt', 'a') as f:
         f.writelines('\nEpoch {}/{}:'.format(epoch, num_epochs))
-        f.writelines('\n\t Training losses: %s,  '%str(train_losses)\
+        f.writelines('\n\tTraining loss: %s,  '%str(train_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
     f.close()
 
@@ -119,22 +121,28 @@ for epoch in range(num_epochs):
     print("\nBegin Validation @ Epoch {}".format(epoch+1))
     val_losses = validate(val_ske, val_block, ske_len, DM_general, DM_param,
                 batch_size, train_size, model, criterion, device, start_time)
+    val_time   = time.localtime()
 
     # remember best prec@1 and save checkpoint if desired
     # is_best = prec1 > best_prec1
     if val_losses < lowest_losses:
         lowest_losses = val_losses
+        lowest_time   = val_time
         torch.save(model.state_dict(),
-             "./params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", local_time))
+             "params/params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
+    
+    with open('history.txt', 'a') as f:
+        f.writelines('\n\tValidation loss: %s,  '%str(val_losses)\
+            +time.strftime("%Y-%m-%d, %H:%M:%S", val_time))
+        f.writelines('\n\tLowest val loss: %s,  '%str(val_losses)\
+            +time.strftime("%Y-%m-%d, %H:%M:%S", lowest_time))
+    f.close()
 
     print("Epoch Summary: ")
     print("\tEpoch training loss: {}".format(train_losses))
     print("\tEpoch validation loss: {}".format(val_losses))
     print("\tLowest validation loss: {}".format(lowest_losses))
-    with open('history.txt', 'a') as f:
-        f.writelines('\n\t Validation losses: %s,  '%str(val_losses)\
-            +time.strftime("%Y-%m-%d, %H:%M:%S", local_time))
-    f.close()
+    
 
 
 

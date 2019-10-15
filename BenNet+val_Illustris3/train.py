@@ -11,7 +11,7 @@ Training process. For missed parameters plz check the main.py.
 
 def train(train_ske, train_block, ske_len, DM_general, DM_param,
         batch_size, train_size, model, criterion, optimizer,
-        num_epochs, epoch, device, start_time):
+        num_epochs, epoch, device, start_time, localtime):
     '''
     Global variables: len_ske, DM_param, start_time, date
     Possible: batch_size, train_size, num_epochs, device
@@ -45,10 +45,12 @@ def train(train_ske, train_block, ske_len, DM_general, DM_param,
         
         if (i+1) % 100 == 0:
             print ("Epoch [{}/{}], Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
-                   .format(epoch+1, num_epochs, i+1, train_ske.shape[0], loss.item(), time.time()-start_time))
+                   .format(epoch+1, num_epochs, i+1,
+                           train_ske.shape[0], loss.item(), time.time()-start_time))
         if (i+1) % 10000 ==0: #train_ske.shape[0]
             print ("SAVING MODEL!")
-            torch.save(model.state_dict(), "./HyPhy_%s"%time.strftime("%Y-%m-%d", time.localtime()))
+            torch.save(model.state_dict(),
+                       "params/HyPhy_%s"%time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
     
     return losses.avg
 
