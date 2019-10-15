@@ -26,6 +26,7 @@ train_size = np.array([9, 9, 17]) # x, y, z respctively
 batch_size = 40
 learning_rate = 0.0001
 num_epochs = 10
+local_time = time.localtime()
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
 
@@ -92,7 +93,7 @@ lowest_losses = 999.0
 
 print('\nStart Training:')
 with open('history.txt', 'a') as f:
-    f.writelines('\nTraining History Record:')
+    f.writelines('\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
     f.writelines('\nVal Frac: {}/{}'.format(val_len, len(ske.flatten())))
@@ -124,7 +125,7 @@ for epoch in range(num_epochs):
     if val_losses < lowest_losses:
         lowest_losses = val_losses
         torch.save(model.state_dict(),
-             "./params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime()))
+             "./params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", local_time))
 
     print("Epoch Summary: ")
     print("\tEpoch training loss: {}".format(train_losses))
@@ -132,7 +133,7 @@ for epoch in range(num_epochs):
     print("\tLowest validation loss: {}".format(lowest_losses))
     with open('history.txt', 'a') as f:
         f.writelines('\n\t Validation losses: %s,  '%str(val_losses)\
-            +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
+            +time.strftime("%Y-%m-%d, %H:%M:%S", local_time))
     f.close()
 
 
@@ -164,4 +165,5 @@ for epoch in range(num_epochs):
     print("\tEpoch Accuracy: {}".format(prec1))
     print("\tBest Accuracy: {}".format(best_prec1))
 '''
+
 
