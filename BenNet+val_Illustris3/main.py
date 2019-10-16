@@ -173,5 +173,3 @@ for epoch in range(num_epochs):
     print("\tEpoch Accuracy: {}".format(prec1))
     print("\tBest Accuracy: {}".format(best_prec1))
 '''
-
-

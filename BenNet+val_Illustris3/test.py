@@ -29,17 +29,18 @@ def test(test_ske, test_block, ske_len, DM_general, DM_param,
             # make coordinate index, retrieve input dark matter
             batch_grids = make_batch_grids(x, y, z, test_batch, train_size, DM_general.shape[1])
             inputs = DM_general[batch_grids].to(device)
-
-            # compute output
-            outputs = model(inputs).detach().cpu().numpy().flatten()
-            test_outp[i*test_batch:(i+1)*test_batch] = outputs
-
-            # measure and record loss
+            
+            
+            # compute output and mearsure/record loss
+            outputs = model(inputs)
             loss = criterion(outputs, targets)
-            losses.update(loss.item(), inputs.size(0)) 
+            losses.update(loss.item(), inputs.size(0))
+            
+            # record outputs
+            test_outp[i*test_batch:(i+1)*test_batch] = outputs.detach().cpu().numpy().flatten()
 
             if (i+1) % 100 == 0:
-                print (" Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
+                print ("Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
                     .format(i+1, test_ske.shape[0], loss.item(), time.time()-start_time))
     
     test_outp = test_outp.reshape(-1, DM_param.pix)
@@ -62,7 +63,8 @@ train_size = np.array([9, 9, 17]) # x, y, z respctively
 test_batch = 40
 learning_rate = 0.0001
 num_epochs = 10
-localtime  = ???
+localtime = '2019-10-15 13:21:22'
+localtime = time.strptime(localtime, '%Y-%m-%d %H:%M:%S')
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
 
@@ -106,9 +108,9 @@ ske_len = ske.shape[1]
 # divide the sample to training, validation set, and test set.
 print('Setting test set...')
 with open("id_seperate/id_seperate_%s.txt"\
-        %time.strftime("%Y-%m-%d_%H:%M:%S", localtime), "r") as f:
+          %time.strftime("%Y-%m-%d_%H:%M:%S", localtime), "r") as f:
     aa = f.readlines()
-    id_seperate = np.array(list(aa[0][1:-1][::3])).astype('int')
+    id_seperate = np.array(list(aa[0][::3])).astype('int')
     del aa
 f.close()
 
@@ -116,42 +118,55 @@ test_ske, test_block = load_test(ske, block, id_seperate, test_batch)
 test_ske = torch.FloatTensor(test_ske)
 del id_seperate
 
-
 # load model
 model = get_residual_network().float().to(device)
 model.load_state_dict(torch.load('params/params_%s.pkl'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
-# model.load_state_dict(torch.load('params/HyPhy_.pkl'))
+# model.load_state_dict(torch.load('params/HyPhy_%s.pkl'\
+#       %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
 
 
-criterion = nn.MSELoss()
+# loss
+criterion = nn.SmoothL1Loss()
 
+# record starr time
 start_time = time.time()
 
+# start test
+print('Begin testing...')
 test_outp, test_losses = test(test_ske, test_block, ske_len, DM_general, DM_param,
                         test_batch, train_size, model, criterion, device, start_time)
 
-test_ske   = test_ske.numpy().reshape(-1, DM_param.pix)
-test_block = ((test_block-DM_reso/2)/DM_reso).astype('int')
+print("Test Summary: ")
+print("\tTest loss: {}".format(test_losses))
 
+# restore test skewers and test blocks
+test_ske   = test_ske.numpy().reshape(-1, DM_param.pix)
+test_block = ((test_block-DM_param.reso/2)/DM_param.reso).astype('int')
+
+
+# generate comparison images
 if not os.path.exists(Path.cwd() / 'test_figs' / ('%s'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime))):
     os.makedirs(Path.cwd() / 'test_figs' / ('%s'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
 
-for ii, outputs in enumerate(test_outp):
+print('Plotting example skewers...')
+nrange = min(len(test_ske), 50)
+for ii in range(nrange):
+    print('Plotting {}/{}...'.format((ii+1), nrange))
     
     fig, axes = plt.subplots(2, 1, figsize=(12, 8))
 
-    axes[0].plot( np.exp(test_outp[ii]), label='Prediction' )
-    axes[0].plot( np.exp(test_ske[ii]), label='Real', alpha=0.5 )
+    axes[0].plot( -np.log(1-test_outp[ii]), label='Predicted' )
+    axes[0].plot( -np.log(1-test_ske[ii]), label='Real', alpha=0.5 )
     #axes[0].plot( DM_general[0, int(test_block[ii,0]/DM_reso), int(test_block[ii,1]/DM_reso), :].numpy(), label='DM', alpha=0.3 )
     axes[0].set_ylabel(r'$\tau$', fontsize=18)
     axes[0].set_ylim([0,3])
     axes[0].legend(fontsize=18, bbox_to_anchor=(1.26,0.75))
 
-    axes[1].plot( np.exp(-np.exp(test_outp[ii])), label='Prediction', alpha=0.7 )
-    axes[1].plot( np.exp(-np.exp(test_ske[ii])), label='Real', alpha=0.5 )
+    axes[1].plot( 1-test_outp[ii], label='Predicted', alpha=0.7 )
+    axes[1].plot( 1-test_ske[ii], label='Real', alpha=0.5 )
     axes[1].set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
     axes[1].set_ylim([-0.1, 1.1])
     axes[1].legend(fontsize=18, bbox_to_anchor=(1.26,0.75))
@@ -162,3 +177,13 @@ for ii, outputs in enumerate(test_outp):
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
         ('x%dy%d.png'%(test_block[ii,0], test_block[ii,1])),
         dpi=400, bbox_inches='tight')
+    plt.close()
+
+# record this test
+with open('history.txt', 'a') as f:
+    f.writelines('\n\n\nTest History Record:')
+    f.writelines('\n\tTest of the training at %s.'\
+            %time.strftime("%Y-%m-%d, %H:%M:%S", localtime))
+    f.writelines('\n\tTest loss: %s,  '%str(test_losses)\
+        +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
+f.close()
