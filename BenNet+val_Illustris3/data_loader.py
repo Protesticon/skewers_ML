@@ -15,12 +15,12 @@ def make_batch_grids(x, y, z, batch_size, train_size, DM_size):
 
     DM_size: int, the size of each dark matter field in pixel.
     '''
-    # x,y,z range are coordinates ranges of each training cube
+    # x,y,z range are coordinates ranges of each input cube
     x_range = ((x.reshape(batch_size,-1)+(np.arange(train_size[0])-(train_size[0]-1)/2)+DM_size)%DM_size).astype('int')
     y_range = ((y.reshape(batch_size,-1)+(np.arange(train_size[1])-(train_size[1]-1)/2)+DM_size)%DM_size).astype('int')
     z_range = ((z.reshape(batch_size,-1)+(np.arange(train_size[2])-(train_size[2]-1)/2)+DM_size)%DM_size).astype('int')
     
-    # cx,cy,cz are coordinates of every points of each training cube, together forming a meshgrid
+    # cx,cy,cz are coordinates of every points of each input cube, together forming a meshgrid
     ci = np.array([0,1,2,3]).repeat(train_size.prod()*batch_size).reshape(4,batch_size,train_size[0],train_size[1],train_size[2]).transpose(1,0,2,3,4)
     cx = x_range.repeat(train_size[[1,2]].prod()).reshape(batch_size,1,train_size[1],train_size[0],train_size[2]).transpose(0,1,2,3,4).repeat(4, axis=1)
     cy = y_range.repeat(train_size[[2,0]].prod()).reshape(batch_size,1,train_size[0],train_size[2],train_size[1]).transpose(0,1,4,2,3).repeat(4, axis=1)
@@ -53,24 +53,24 @@ def load_DM(Path, FileName):
     # read in vx field
     DM_vx_fits = fits.open(Path/FileName[1])
     DM_vx = DM_vx_fits[0].data
-    DM_vx = DM_vx/np.absolute(DM_vx[1]).mean()
     DM_vx_fits.close(); del DM_vx_fits
 
     # read in vy field
     DM_vy_fits = fits.open(Path/FileName[2])
     DM_vy = DM_vy_fits[0].data
-    DM_vy = DM_vy/np.absolute(DM_vy[1]).mean()
     DM_vy_fits.close(); del DM_vy_fits
 
     # read in vz field
     DM_vz_fits = fits.open(Path/FileName[3])
     DM_vz = DM_vz_fits[0].data
-    DM_vz = DM_vz/np.absolute(DM_vz[1]).mean()
     DM_vz_fits.close(); del DM_vz_fits
 
+    # normalize the velocity field
+    v_mean = np.linalg.norm(([DM_vx, DM_vy, DM_vz]), axis=0).mean()
+
     # put 4 fields into 1 numpy array
-    DM_general = np.array([DM, DM_vx, DM_vy, DM_vz])
-    del DM, DM_vx, DM_vy, DM_vz
+    DM_general = np.array([DM, DM_vx/v_mean, DM_vy/v_mean, DM_vz/v_mean])
+    del DM, DM_vx, DM_vy, DM_vz, v_mean
     
     return DM_general
 
@@ -80,10 +80,10 @@ def load_skewers(Path, FileName, DM_reso):
     '''
     To load original skewers data in shape of [number, length in pixels]. Generating each coordinate [x, y, 0] simultaneously. Output: skewers and coordinate.
     '''
-    # read in skewers
+    # read in skewers and make coordinates of the skewers
     ske   = np.loadtxt(Path/FileName)
     ax    = np.arange(0.125/2.,75.,0.125)*1.e3
-    block = np.array(np.meshgrid(ax,ax,np.array([0.]))).T.reshape(-1,3)
+    block = np.array(np.meshgrid(ax, ax, np.array([0.]))).T.reshape(-1,3)
     del ax
 
     return ske, block
