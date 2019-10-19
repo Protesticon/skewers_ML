@@ -72,7 +72,7 @@ id_seperate = divide_data(ske, train_len, val_len, test_len, localtime)
 train_ske, train_block = load_train(ske, block, id_seperate, batch_size, pre_proc)
 train_ske = torch.FloatTensor(train_ske)
 
-val_ske, val_block = load_val(ske, block, id_seperate, batch_size)
+val_ske, val_block = load_val(ske, block, id_seperate, batch_size, pre_proc)
 val_ske = torch.FloatTensor(val_ske)
 
 del id_seperate
@@ -100,6 +100,7 @@ with open('history.txt', 'a') as f:
     f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
     f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske*batch_size), len(ske.flatten())))
     f.writelines('\nVal Frac: {}/{}'.format(val_len, len(ske.flatten())))
+    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske*batch_size), len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_size))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
     f.writelines('\nLoss: %s'%criterion.__class__.__name__)
@@ -109,7 +110,7 @@ f.close()
 
 for epoch in range(num_epochs):
     # train for one epoch
-    print("\nBegin Training Epoch {}".format(epoch+1))
+    print("Begin Training Epoch {}".format(epoch+1))
     train_losses = train(train_ske, train_block, DM_general, DM_param,
                     batch_size, train_size, model, criterion, optimizer,
                     num_epochs, epoch, device, start_time, localtime)
@@ -120,7 +121,7 @@ for epoch in range(num_epochs):
     f.close()
 
     # evaluate on validation set
-    print("\nBegin Validation @ Epoch {}".format(epoch+1))
+    print("Begin Validation @ Epoch {}".format(epoch+1))
     val_losses = validate(val_ske, val_block, DM_general, DM_param,
                 batch_size, train_size, model, criterion, device, start_time)
     val_time   = time.localtime()

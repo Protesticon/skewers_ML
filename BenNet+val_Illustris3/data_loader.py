@@ -134,7 +134,7 @@ def load_train(ske, block, id_seperate, batch_size, pre_proc):
 
 
 
-def load_val(ske, block, id_seperate, batch_size):
+def load_val(ske, block, id_seperate, batch_size, pre_proc):
     '''
     To load, shuffle and chunk the validation set.
     '''
@@ -148,6 +148,11 @@ def load_val(ske, block, id_seperate, batch_size):
     np.random.shuffle( val_ske )
 
     val_ske = val_ske.flatten()
+    val_block = val_block.reshape(-1, 3)
+    val_ske, val_block = pre_proc(val_ske, val_block)
+    val_len1  = len(val_ske) - len(val_ske)%batch_size
+    val_ske   = val_ske[:val_len1]
+    val_block = val_block[:val_len1]
     val_ske = list(chunked( val_ske, batch_size )) 
 
     return (val_ske, val_block)
