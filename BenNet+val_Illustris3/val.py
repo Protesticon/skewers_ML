@@ -10,7 +10,7 @@ Validation process. For missed parameters plz check the main.py.
 '''
 
 
-def validate(val_ske, val_block, ske_len, DM_general, DM_param,
+def validate(val_ske, val_block, DM_general, DM_param,
         batch_size, train_size, model, criterion, device, start_time):
 
     losses = AverageMeter()
@@ -24,11 +24,11 @@ def validate(val_ske, val_block, ske_len, DM_general, DM_param,
             # get the targets;
             targets = val_data.reshape((batch_size,1)).to(device)
             # x,y,z are the central coordinates of each training DM cube
-            x = (val_block[np.floor((i*batch_size+np.arange(batch_size))/ske_len).astype('int'), 0]-DM_param.reso/2)/DM_param.reso
-            y = (val_block[np.floor((i*batch_size+np.arange(batch_size))/ske_len).astype('int'), 1]-DM_param.reso/2)/DM_param.reso
-            z = np.linspace(start=0, stop=ske_len-1, num=ske_len)[(i*batch_size+np.arange(batch_size))%ske_len] # z from 0 or to 0?
+            x = val_block[(i*batch_size+np.arange(batch_size)).astype('int'), 0]
+            y = val_block[(i*batch_size+np.arange(batch_size)).astype('int'), 1]
+            z = val_block[(i*batch_size+np.arange(batch_size)).astype('int'), 2]
             # make coordinate index, retrieve input dark matter
-            batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_general.shape[1])
+            batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_param)
             inputs = DM_general[batch_grids].to(device)
 
             # compute output

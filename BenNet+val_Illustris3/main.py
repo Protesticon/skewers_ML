@@ -110,7 +110,7 @@ f.close()
 for epoch in range(num_epochs):
     # train for one epoch
     print("\nBegin Training Epoch {}".format(epoch+1))
-    train_losses = train(train_ske, train_block, ske_len, DM_general, DM_param,
+    train_losses = train(train_ske, train_block, DM_general, DM_param,
                     batch_size, train_size, model, criterion, optimizer,
                     num_epochs, epoch, device, start_time, localtime)
     with open('history.txt', 'a') as f:
@@ -121,7 +121,7 @@ for epoch in range(num_epochs):
 
     # evaluate on validation set
     print("\nBegin Validation @ Epoch {}".format(epoch+1))
-    val_losses = validate(val_ske, val_block, ske_len, DM_general, DM_param,
+    val_losses = validate(val_ske, val_block, DM_general, DM_param,
                 batch_size, train_size, model, criterion, device, start_time)
     val_time   = time.localtime()
 

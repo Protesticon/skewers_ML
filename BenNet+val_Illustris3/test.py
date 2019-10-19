@@ -27,7 +27,7 @@ def test(test_ske, test_block, DM_general, DM_param,
             y = test_block[(i*test_batch+np.arange(test_batch)).astype('int'), 1]
             z = test_block[(i*test_batch+np.arange(test_batch)).astype('int'), 2]
             # make coordinate index, retrieve input dark matter
-            batch_grids = make_batch_grids(x, y, z, test_batch, train_size)
+            batch_grids = make_batch_grids(x, y, z, test_batch, train_size, DM_param)
             inputs = DM_general[batch_grids].to(device)
             
             
@@ -135,7 +135,7 @@ start_time = time.time()
 
 # start test
 print('Begin testing...')
-test_outp, test_losses = test(test_ske, test_block, ske_len, DM_general, DM_param,
+test_outp, test_losses = test(test_ske, test_block, DM_general, DM_param,
                         test_batch, train_size, model, criterion, device, start_time)
 
 print("Test Summary: ")
