@@ -3,7 +3,7 @@ from astropy.io import fits
 from more_itertools import chunked
 
 
-def make_batch_grids(x, y, z, batch_size, train_size, DM_size):
+def make_batch_grids(x, y, z, batch_size, train_size, DM_param):
     '''
     To get the coordinate (index) of dark matter to be retrieved given the central pixel's coordinate and the input size.
 
@@ -12,19 +12,17 @@ def make_batch_grids(x, y, z, batch_size, train_size, DM_size):
     batch_size: int, the number of trained samples at one time;
 
     train_size: 3d array of int in order of x,y,z, the size of each trained sample;
-
-    DM_size: int, the size of each dark matter field in pixel.
     '''
-    # x,y,z range are coordinates ranges of each input cube
-    x_range = ((x.reshape(batch_size,-1)+(np.arange(train_size[0])-(train_size[0]-1)/2)+DM_size)%DM_size).astype('int')
-    y_range = ((y.reshape(batch_size,-1)+(np.arange(train_size[1])-(train_size[1]-1)/2)+DM_size)%DM_size).astype('int')
-    z_range = ((z.reshape(batch_size,-1)+(np.arange(train_size[2])-(train_size[2]-1)/2)+DM_size)%DM_size).astype('int')
-    
-    # cx,cy,cz are coordinates of every points of each input cube, together forming a meshgrid
+    # x,y,z range are coordinates ranges of each training cube
+    x_range = ((x.reshape(batch_size,-1)+(np.arange(train_size[0])-(train_size[0]-1)/2))%DM_param.pix).astype('int')
+    y_range = ((y.reshape(batch_size,-1)+(np.arange(train_size[1])-(train_size[1]-1)/2))%DM_param.pix).astype('int')
+    z_range = ((z.reshape(batch_size,-1)+(np.arange(train_size[2])-(train_size[2]-1)/2))%DM_param.pix).astype('int')
+
+    # cx,cy,cz are coordinates of every points of each training cube, together forming a meshgrid
     ci = np.array([0,1,2,3]).repeat(train_size.prod()*batch_size).reshape(4,batch_size,train_size[0],train_size[1],train_size[2]).transpose(1,0,2,3,4)
     cx = x_range.repeat(train_size[[1,2]].prod()).reshape(batch_size,1,train_size[1],train_size[0],train_size[2]).transpose(0,1,2,3,4).repeat(4, axis=1)
     cy = y_range.repeat(train_size[[2,0]].prod()).reshape(batch_size,1,train_size[0],train_size[2],train_size[1]).transpose(0,1,4,2,3).repeat(4, axis=1)
-    cz = z_range.repeat(train_size[[0,1]].prod()).reshape(batch_size,1,train_size[2],train_size[1],train_size[0]).transpose(0,1,3,4,2).repeat(4, axis=1)
+    cz = z_range.repeat(train_size[[0,1]].prod()).reshape(batch_size,1,train_size[2],train_size[0],train_size[1]).transpose(0,1,3,4,2).repeat(4, axis=1)
     
     return tuple([ci, cx, cy, cz])
 
@@ -76,14 +74,14 @@ def load_DM(Path, FileName):
 
 
 
-def load_skewers(Path, FileName, DM_reso):
+def load_skewers(Path, FileName, DM_param):
     '''
     To load original skewers data in shape of [number, length in pixels]. Generating each coordinate [x, y, 0] simultaneously. Output: skewers and coordinate.
     '''
     # read in skewers and make coordinates of the skewers
     ske   = np.loadtxt(Path/FileName)
-    ax    = np.arange(0.125/2.,75.,0.125)*1.e3
-    block = np.array(np.meshgrid(ax, ax, np.array([0.]))).T.reshape(-1,3)
+    ax = np.arange(DM_param.pix)
+    block = np.array(np.meshgrid(ax, ax, ax)).transpose(2,1,3,0).reshape(-1,DM_param.pix,3)
     del ax
 
     return ske, block
@@ -94,6 +92,7 @@ def divide_data(ske, train_len, val_len, test_len, localtime):
     '''
     randomly selet the training set, validation set, and test set.
     '''
+    import time
     waste_len = ske.shape[0] - train_len - val_len - test_len
     train_arr = np.ones(train_len)
     val_arr   = np.ones(val_len)*2
@@ -110,20 +109,27 @@ def divide_data(ske, train_len, val_len, test_len, localtime):
 
 
 
-def load_train(ske, block, id_seperate, batch_size):
+def load_train(ske, block, id_seperate, batch_size, pre_proc):
     '''
     To load, shuffle and chunk the training set.
     '''
     train_block = block[id_seperate == 1]
     train_ske   = ske[id_seperate == 1]
+
     np.random.seed(np.random.randint(0,50))
     state = np.random.get_state()
     np.random.shuffle( train_block )
     np.random.set_state(state)
     np.random.shuffle( train_ske )
-    train_ske = train_ske.flatten()
-    train_ske = list(chunked( train_ske, batch_size ))
-
+    
+    train_ske   = train_ske.flatten()
+    train_block = train_block.reshape(-1, 3)
+    train_ske, train_block = pre_proc(train_ske, train_block)
+    train_len1  = len(train_ske) - len(train_ske)%batch_size
+    train_ske   = train_ske[:train_len1]
+    train_block = train_block[:train_len1]
+    train_ske = list(chunked(train_ske, batch_size))
+    
     return (train_ske, train_block)
 
 
@@ -134,11 +140,13 @@ def load_val(ske, block, id_seperate, batch_size):
     '''
     val_block = block[id_seperate == 2]
     val_ske   = ske[id_seperate == 2]
+
     np.random.seed(np.random.randint(0,51))
     state = np.random.get_state()
     np.random.shuffle( val_block )
     np.random.set_state(state)
     np.random.shuffle( val_ske )
+
     val_ske = val_ske.flatten()
     val_ske = list(chunked( val_ske, batch_size )) 
 
@@ -152,11 +160,13 @@ def load_test(ske, block, id_seperate, batch_size):
     '''
     test_block = block[id_seperate == 3]
     test_ske   = ske[id_seperate == 3]
+
     np.random.seed(np.random.randint(0,51))
     state = np.random.get_state()
     np.random.shuffle( test_block )
     np.random.set_state(state)
     np.random.shuffle( test_ske )
+
     test_ske = test_ske.flatten()
     test_ske = list(chunked( test_ske, batch_size )) 
 

@@ -23,12 +23,18 @@ train_len  = 10000
 val_len    = 900
 test_len   = 400
 train_size = np.array([9, 9, 17]) # x, y, z respctively
-batch_size = 40
+batch_size = 50
 learning_rate = 0.0001
 num_epochs = 10
 localtime = time.localtime()
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
+
+# pre-process
+def pre_proc(tau, block):
+    '''1-exp(tau), tau<3'''
+    bln = tau<3
+    return (1-np.exp(-tau[bln]), block[bln])
 
 
 
@@ -54,16 +60,7 @@ DM_general = torch.tensor(DM_general).float()
 
 # load skewers
 print('Loading skewers...')
-ske, block = load_skewers(folder, ske_name, DM_param.reso)
-# pre-procession
-ske = 1-np.exp(-1*ske)
-## only use the skewers that lie on DM pixels
-boolean = ((block[:,0]+DM_param.reso/2)%DM_param.reso + (block[:,1]+DM_param.reso/2)%DM_param.reso) == 0
-ske     = ske[boolean]
-block   = block[boolean]
-del boolean
-print('There are %d skewers on DM pixels.'%ske.shape[0])
-## only use skewers that satisfy certain requirments
+ske, block = load_skewers(folder, ske_name, DM_param)
 # basic parameters
 ske_len = ske.shape[1]
 
@@ -71,10 +68,13 @@ ske_len = ske.shape[1]
 # divide the sample to training, validation set, and test set.
 print('Setting training and validation set...')
 id_seperate = divide_data(ske, train_len, val_len, test_len, localtime)
-train_ske, train_block = load_train(ske, block, id_seperate, batch_size)
+
+train_ske, train_block = load_train(ske, block, id_seperate, batch_size, pre_proc)
 train_ske = torch.FloatTensor(train_ske)
+
 val_ske, val_block = load_val(ske, block, id_seperate, batch_size)
 val_ske = torch.FloatTensor(val_ske)
+
 del id_seperate
 
 
@@ -98,8 +98,10 @@ with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
+    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske*batch_size), len(ske.flatten())))
     f.writelines('\nVal Frac: {}/{}'.format(val_len, len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_size))
+    f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
     f.writelines('\nLoss: %s'%criterion.__class__.__name__)
     f.writelines('\nOptimizer: %s'%optimizer.__class__.__name__)
     f.writelines('\nLearning Rate: %s'%str(learning_rate))

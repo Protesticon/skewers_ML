@@ -9,7 +9,7 @@ from data_loader import make_batch_grids
 Training process. For missed parameters plz check the main.py.
 '''
 
-def train(train_ske, train_block, ske_len, DM_general, DM_param,
+def train(train_ske, train_block, DM_general, DM_param,
         batch_size, train_size, model, criterion, optimizer,
         num_epochs, epoch, device, start_time, localtime):
     '''
@@ -23,12 +23,12 @@ def train(train_ske, train_block, ske_len, DM_general, DM_param,
     for i, train_data in enumerate(train_ske, 0):
         # get the targets;
         targets = train_data.reshape((batch_size, 1)).to(device)
-        # x,y,z are the central coordinates of each training DM cube
-        x = (train_block[np.floor((i*batch_size+np.arange(batch_size))/ske_len).astype('int'), 0]-DM_param.reso/2)/DM_param.reso
-        y = (train_block[np.floor((i*batch_size+np.arange(batch_size))/ske_len).astype('int'), 1]-DM_param.reso/2)/DM_param.reso
-        z = np.linspace(start=0, stop=ske_len-1, num=ske_len)[(i*batch_size+np.arange(batch_size))%ske_len] # z from 0 or to 0?
+        # x,y,z are the central coordinates of each input DM cuboid
+        x = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 0]
+        y = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 1]
+        z = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 2]
         # make coordinate index, retrieve input dark matter
-        batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_general.shape[1])
+        batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_param)
         inputs = DM_general[batch_grids].to(device)
 
         # forward + backward + optimize

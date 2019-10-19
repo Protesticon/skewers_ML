@@ -9,7 +9,7 @@ from data_loader import *
 from model import *
 
 
-def test(test_ske, test_block, ske_len, DM_general, DM_param,
+def test(test_ske, test_block, DM_general, DM_param,
         test_batch, train_size, model, criterion,
          device, start_time):
 
@@ -21,13 +21,13 @@ def test(test_ske, test_block, ske_len, DM_general, DM_param,
         for i, test_data in enumerate(test_ske, 0):
 
             # get the targets;
-            targets = test_data.reshape((test_batch,1)).to(device)
-            # x,y,z are the central coordinates of each training DM cube
-            x = (test_block[np.floor((i*test_batch+np.arange(test_batch))/ske_len).astype('int'), 0]-DM_param.reso/2)/DM_param.reso
-            y = (test_block[np.floor((i*test_batch+np.arange(test_batch))/ske_len).astype('int'), 1]-DM_param.reso/2)/DM_param.reso
-            z = np.linspace(start=0, stop=ske_len-1, num=ske_len)[(i*test_batch+np.arange(test_batch))%ske_len] # z from 0 or to 0?
+            targets = test_data.reshape((test_batch, 1)).to(device)
+            # x,y,z are the central coordinates of each input DM cube
+            x = test_block[(i*test_batch+np.arange(test_batch)).astype('int'), 0]
+            y = test_block[(i*test_batch+np.arange(test_batch)).astype('int'), 1]
+            z = test_block[(i*test_batch+np.arange(test_batch)).astype('int'), 2]
             # make coordinate index, retrieve input dark matter
-            batch_grids = make_batch_grids(x, y, z, test_batch, train_size, DM_general.shape[1])
+            batch_grids = make_batch_grids(x, y, z, test_batch, train_size)
             inputs = DM_general[batch_grids].to(device)
             
             
@@ -48,6 +48,14 @@ def test(test_ske, test_block, ske_len, DM_general, DM_param,
     return test_outp, losses.avg
 
 
+
+# pre-process
+def pre_proc(tau, block):
+    '''1-exp(tau)'''
+    return (1-np.exp(-1*tau), block)
+
+
+
 # Path and data file name
 folder  = Path.cwd().parent / 'Illustris3'
 DM_name = ['DMdelta_Illustris3_L75_N600.fits', 
@@ -60,7 +68,7 @@ ske_name = 'spectra_Illustris3_N600.dat'
 
 # hyper parameters
 train_size = np.array([9, 9, 17]) # x, y, z respctively
-test_batch = 40
+test_batch = 50
 learning_rate = 0.0001
 num_epochs = 10
 localtime = '2019-10-15 13:21:22'
@@ -92,15 +100,7 @@ DM_general = torch.tensor(DM_general).float()
 
 # load skewers
 print('Loading skewers...')
-ske, block = load_skewers(folder, ske_name, DM_param.reso)
-# pre-procession
-ske = 1-np.exp(-1*ske)
-## only use the skewers that lie on DM pixels
-boolean = ((block[:,0]+DM_param.reso/2)%DM_param.reso + (block[:,1]+DM_param.reso/2)%DM_param.reso) == 0
-ske     = ske[boolean]
-block   = block[boolean]
-del boolean
-## only use skewers that satisfy certain requirments
+ske, block = load_skewers(folder, ske_name, DM_param)
 # basic parameters
 ske_len = ske.shape[1]
 
@@ -115,6 +115,7 @@ with open("id_seperate/id_seperate_%s.txt"\
 f.close()
 
 test_ske, test_block = load_test(ske, block, id_seperate, test_batch)
+test_ske, test_block = pre_proc(test_ske, test_block)
 test_ske = torch.FloatTensor(test_ske)
 del id_seperate
 
