@@ -189,7 +189,7 @@ for ii in range(nrange):
     plt.subplots_adjust(wspace=0, hspace=0.1)
     plt.savefig(Path.cwd() / 'test_figs' / ('%s'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
-        ('x%dy%d.png'%(test_block[ii,0][0], test_block[ii,1][0])),
+        ('x%dy%d.png'%(test_block[ii,0,0], test_block[ii,0,1])),
         dpi=400, bbox_inches='tight')
     plt.close()
 
