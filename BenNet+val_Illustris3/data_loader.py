@@ -172,7 +172,8 @@ def load_test(ske, block, id_seperate, batch_size):
     np.random.set_state(state)
     np.random.shuffle( test_ske )
 
-    test_ske = test_ske.flatten()
+    test_ske   = test_ske.flatten()
+    test_block = test_block.reshape(-1, 3)
     test_ske = list(chunked( test_ske, batch_size )) 
 
     return (test_ske, test_block)

@@ -19,7 +19,7 @@ ske_name = 'spectra_Illustris3_N600.dat'
 
 
 # hyper parameters
-train_len  = 10000
+train_len  = 30000
 val_len    = 900
 test_len   = 400
 train_size = np.array([9, 9, 17]) # x, y, z respctively
@@ -96,10 +96,10 @@ lowest_time   = localtime
 print('\nStart Training:')
 with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTraining History Record,')
-    f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    f.writelines('\nTrain Frac: {}/{}'.format(train_len, len(ske.flatten())))
+    f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", localtime))
+    f.writelines('\nTrain Frac: {}/{}'.format(train_len*ske_len, len(ske.flatten())))
     f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske*batch_size), len(ske.flatten())))
-    f.writelines('\nVal Frac: {}/{}'.format(val_len, len(ske.flatten())))
+    f.writelines('\nVal Frac: {}/{}'.format(val_len*ske_len, len(ske.flatten())))
     f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske*batch_size), len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_size))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
@@ -135,7 +135,7 @@ for epoch in range(num_epochs):
              "params/params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
     
     with open('history.txt', 'a') as f:
-        f.writelines('\n\tValidation loss: %s,  '%str(val_losses)\
+        f.writelines('\n\tValidation loss: %s,  '%str(lowest_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", val_time))
         f.writelines('\n\tLowest val loss: %s,  '%str(val_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", lowest_time))

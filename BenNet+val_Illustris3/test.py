@@ -5,6 +5,9 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
+import warnings
+warnings.filterwarnings('ignore')
+
 from data_loader import *
 from model import *
 
@@ -52,6 +55,8 @@ def test(test_ske, test_block, DM_general, DM_param,
 # pre-process
 def pre_proc(tau, block):
     '''1-exp(tau)'''
+    tau   = np.array(tau)
+    block = np.array(block)
     return (1-np.exp(-1*tau), block)
 
 
@@ -71,7 +76,7 @@ train_size = np.array([9, 9, 17]) # x, y, z respctively
 test_batch = 50
 learning_rate = 0.0001
 num_epochs = 10
-localtime = '2019-10-15 13:21:22'
+localtime = '2019-10-21 03:33:52'
 localtime = time.strptime(localtime, '%Y-%m-%d %H:%M:%S')
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
@@ -119,6 +124,7 @@ test_ske, test_block = pre_proc(test_ske, test_block)
 test_ske = torch.FloatTensor(test_ske)
 del id_seperate
 
+
 # load model
 model = get_residual_network().float().to(device)
 model.load_state_dict(torch.load('params/params_%s.pkl'\
@@ -127,11 +133,14 @@ model.load_state_dict(torch.load('params/params_%s.pkl'\
 #       %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
 
 
+
 # loss
 criterion = nn.SmoothL1Loss()
 
+
 # record starr time
 start_time = time.time()
+
 
 # start test
 print('Begin testing...')
@@ -141,9 +150,9 @@ test_outp, test_losses = test(test_ske, test_block, DM_general, DM_param,
 print("Test Summary: ")
 print("\tTest loss: {}".format(test_losses))
 
-# restore test skewers and test blocks
+# restore test skewers
 test_ske   = test_ske.numpy().reshape(-1, DM_param.pix)
-test_block = ((test_block-DM_param.reso/2)/DM_param.reso).astype('int')
+test_block = test_block.reshape(-1, DM_param.pix, 3)
 
 
 # generate comparison images
@@ -158,13 +167,17 @@ for ii in range(nrange):
     print('Plotting {}/{}...'.format((ii+1), nrange))
     
     fig, axes = plt.subplots(2, 1, figsize=(12, 8))
-
-    axes[0].plot( -np.log(1-test_outp[ii]), label='Predicted' )
-    axes[0].plot( -np.log(1-test_ske[ii]), label='Real', alpha=0.5 )
-    #axes[0].plot( DM_general[0, int(test_block[ii,0]/DM_reso), int(test_block[ii,1]/DM_reso), :].numpy(), label='DM', alpha=0.3 )
+    p1, = axes[0].plot( -np.log(1-test_outp[ii]), label='Predicted' )
+    p2, = axes[0].plot( -np.log(1-test_ske[ii]), label='Real', alpha=0.5 )
     axes[0].set_ylabel(r'$\tau$', fontsize=18)
     axes[0].set_ylim([0,3])
-    axes[0].legend(fontsize=18, bbox_to_anchor=(1.26,0.75))
+    subaxs = axes[0].twinx()
+    p3, = subaxs.plot( DM_general[0, int(test_block[ii,0,0]), int(test_block[ii,0,1]), :].numpy(),
+                       label='DM', alpha=0.3, color='green' )
+    subaxs.set_ylim([0, 5])
+    subaxs.set_ylabel(r'DM Over Den+1', fontsize=18)
+    axes[0].legend([p1,p2,p3], [l.get_label() for l in [p1,p2,p3]],
+                   fontsize=18, bbox_to_anchor=(1.26,0.75))
 
     axes[1].plot( 1-test_outp[ii], label='Predicted', alpha=0.7 )
     axes[1].plot( 1-test_ske[ii], label='Real', alpha=0.5 )
@@ -176,7 +189,7 @@ for ii in range(nrange):
     plt.subplots_adjust(wspace=0, hspace=0.1)
     plt.savefig(Path.cwd() / 'test_figs' / ('%s'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
-        ('x%dy%d.png'%(test_block[ii,0], test_block[ii,1])),
+        ('x%dy%d.png'%(test_block[ii,0][0], test_block[ii,1][0])),
         dpi=400, bbox_inches='tight')
     plt.close()
 
@@ -185,6 +198,7 @@ with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTest History Record:')
     f.writelines('\n\tTest of the training at %s.'\
             %time.strftime("%Y-%m-%d, %H:%M:%S", localtime))
+    f.writelines('\n\tTest batch size: %d'%test_batch)
     f.writelines('\n\tTest loss: %s,  '%str(test_losses)\
         +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
 f.close()
