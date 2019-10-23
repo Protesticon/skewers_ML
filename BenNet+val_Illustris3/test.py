@@ -76,7 +76,7 @@ train_size = np.array([9, 9, 17]) # x, y, z respctively
 test_batch = 50
 learning_rate = 0.0001
 num_epochs = 10
-localtime = '2019-10-21 03:33:52'
+localtime = '2019-10-22 11:56:38'
 localtime = time.strptime(localtime, '%Y-%m-%d %H:%M:%S')
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
@@ -162,25 +162,31 @@ if not os.path.exists(Path.cwd() / 'test_figs' / ('%s'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
 
 print('Plotting example skewers...')
+from scipy import constants as C
+v_end  = 0.02514741843009228 * C.speed_of_light / 1e3
+vaxis  = np.arange(0, v_end, v_end/600)
 nrange = min(len(test_ske), 50)
 for ii in range(nrange):
-    print('Plotting {}/{}...'.format((ii+1), nrange))
+    print('Plotting {}/{}, x{}y{}.png...'\
+          .format((ii+1), nrange, test_block[ii,0,0], test_block[ii,0,1]))
     
     fig, axes = plt.subplots(2, 1, figsize=(12, 8))
-    p1, = axes[0].plot( -np.log(1-test_outp[ii]), label='Predicted' )
-    p2, = axes[0].plot( -np.log(1-test_ske[ii]), label='Real', alpha=0.5 )
+    p1, = axes[0].plot(vaxis, -np.log(1-test_outp[ii]), label='Predicted' )
+    p2, = axes[0].plot(vaxis, -np.log(1-test_ske[ii]), label='Real', alpha=0.5 )
+    axes[0].set_xlabel(r'v (km/s)', fontsize=18)
     axes[0].set_ylabel(r'$\tau$', fontsize=18)
     axes[0].set_ylim([0,3])
     subaxs = axes[0].twinx()
-    p3, = subaxs.plot( DM_general[0, int(test_block[ii,0,0]), int(test_block[ii,0,1]), :].numpy(),
+    p3, = subaxs.plot(vaxis, DM_general[0, int(test_block[ii,0,0]), int(test_block[ii,0,1]), :].numpy(),
                        label='DM', alpha=0.3, color='green' )
     subaxs.set_ylim([0, 5])
     subaxs.set_ylabel(r'DM Over Den+1', fontsize=18)
     axes[0].legend([p1,p2,p3], [l.get_label() for l in [p1,p2,p3]],
                    fontsize=18, bbox_to_anchor=(1.26,0.75))
 
-    axes[1].plot( 1-test_outp[ii], label='Predicted', alpha=0.7 )
-    axes[1].plot( 1-test_ske[ii], label='Real', alpha=0.5 )
+    axes[1].plot(vaxis, 1-test_outp[ii], label='Predicted', alpha=0.7 )
+    axes[1].plot(vaxis, 1-test_ske[ii], label='Real', alpha=0.5 )
+    axes[1].set_xlabel(r'v (km/s)', fontsize=18)
     axes[1].set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
     axes[1].set_ylim([-0.1, 1.1])
     axes[1].legend(fontsize=18, bbox_to_anchor=(1.26,0.75))
