@@ -135,9 +135,9 @@ for epoch in range(num_epochs):
              "params/params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
     
     with open('history.txt', 'a') as f:
-        f.writelines('\n\tValidation loss: %s,  '%str(lowest_losses)\
+        f.writelines('\n\tValidation loss: %s,  '%str(val_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", val_time))
-        f.writelines('\n\tLowest val loss: %s,  '%str(val_losses)\
+        f.writelines('\n\tLowest val loss: %s,  '%str(lowest_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", lowest_time))
     f.close()
 
