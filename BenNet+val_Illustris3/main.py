@@ -98,9 +98,9 @@ with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", localtime))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len*ske_len, len(ske.flatten())))
-    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske*batch_size), len(ske.flatten())))
+    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske)*batch_size, len(ske.flatten())))
     f.writelines('\nVal Frac: {}/{}'.format(val_len*ske_len, len(ske.flatten())))
-    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske*batch_size), len(ske.flatten())))
+    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske)*batch_size, len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_size))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
     f.writelines('\nLoss: %s'%criterion.__class__.__name__)
@@ -115,7 +115,7 @@ for epoch in range(num_epochs):
                     batch_size, train_size, model, criterion, optimizer,
                     num_epochs, epoch, device, start_time, localtime)
     with open('history.txt', 'a') as f:
-        f.writelines('\nEpoch {}/{}:'.format(epoch, num_epochs))
+        f.writelines('\nEpoch {}/{}:'.format(epoch+1, num_epochs))
         f.writelines('\n\tTraining loss: %s,  '%str(train_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
     f.close()

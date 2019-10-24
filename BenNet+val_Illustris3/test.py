@@ -76,7 +76,7 @@ train_size = np.array([9, 9, 17]) # x, y, z respctively
 test_batch = 50
 learning_rate = 0.0001
 num_epochs = 10
-localtime = '2019-10-22 11:56:38'
+localtime = '2019-10-20 15:45:09'
 localtime = time.strptime(localtime, '%Y-%m-%d %H:%M:%S')
 if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
@@ -170,9 +170,10 @@ for ii in range(nrange):
     print('Plotting {}/{}, x{}y{}.png...'\
           .format((ii+1), nrange, test_block[ii,0,0], test_block[ii,0,1]))
     
+    # generating skewers
     fig, axes = plt.subplots(2, 1, figsize=(12, 8))
     p1, = axes[0].plot(vaxis, -np.log(1-test_outp[ii]), label='Predicted' )
-    p2, = axes[0].plot(vaxis, -np.log(1-test_ske[ii]), label='Real', alpha=0.5 )
+    p2, = axes[0].plot(vaxis, -np.log(1-test_ske[ii]), label='Real', alpha=0.5)
     axes[0].set_xlabel(r'v (km/s)', fontsize=18)
     axes[0].set_ylabel(r'$\tau$', fontsize=18)
     axes[0].set_ylim([0,3])
@@ -196,14 +197,31 @@ for ii in range(nrange):
     plt.savefig(Path.cwd() / 'test_figs' / ('%s'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
         ('x%dy%d.png'%(test_block[ii,0,0], test_block[ii,0,1])),
-        dpi=400, bbox_inches='tight')
+        dpi=200, bbox_inches='tight')
+    plt.close()
+    
+    # generating cdf of skewers
+    fig, axes = plt.subplots(1, 1, figsize=(12, 5))
+    sort_test = np.sort(1-test_ske[ii])
+    sort_outp = np.sort(1-test_outp[ii])
+    axes.hist(sort_outp/sort_outp[-1], bins=100, density=True,
+              histtype='step', cumulative=True, label='Predicted');
+    axes.hist(sort_test/sort_test[-1], bins=100, density=True,
+              histtype='step', cumulative=True, label='Real', alpha=0.5);
+    axes.set_xlabel(r'normalized F', fontsize=18)
+    axes.set_ylabel(r'cdf', fontsize=18)
+    axes.legend(fontsize=18, bbox_to_anchor=(1.26,0.75) )
+    plt.savefig(Path.cwd() / 'test_figs' / ('%s'\
+        %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
+        ('spectrum_x%dy%d.png'%(test_block[ii,0,0], test_block[ii,0,1])),
+        dpi=200, bbox_inches='tight')
     plt.close()
 
 # record this test
 with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTest History Record:')
-    f.writelines('\n\tTest of the training at %s.'\
-            %time.strftime("%Y-%m-%d, %H:%M:%S", localtime))
+    f.writelines('\n\tTest of the training at %s'\
+            %time.strftime("%Y-%m-%d %H:%M:%S", localtime))
     f.writelines('\n\tTest batch size: %d'%test_batch)
     f.writelines('\n\tTest loss: %s,  '%str(test_losses)\
         +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
