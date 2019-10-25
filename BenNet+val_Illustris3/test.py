@@ -209,7 +209,7 @@ for ii in range(nrange):
     axes.hist(sort_test/sort_test[-1], bins=100, density=True,
               histtype='step', label='Real', alpha=0.5)
     axes.set_xlabel(r'normalized F', fontsize=18)
-    axes.set_ylabel(r'cdf', fontsize=18)
+    axes.set_ylabel(r'pdf', fontsize=18)
     axes.legend(fontsize=18, bbox_to_anchor=(1.26,0.75) )
     plt.savefig(Path.cwd() / 'test_figs' / ('%s'\
         %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
