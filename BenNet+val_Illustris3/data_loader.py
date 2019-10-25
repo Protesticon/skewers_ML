@@ -166,7 +166,7 @@ def load_test(ske, block, id_seperate, batch_size):
     test_block = block[id_seperate == 3]
     test_ske   = ske[id_seperate == 3]
 
-    np.random.seed(np.random.randint(0,51))
+    np.random.seed(52)
     state = np.random.get_state()
     np.random.shuffle( test_block )
     np.random.set_state(state)

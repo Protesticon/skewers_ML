@@ -54,7 +54,7 @@ def test(test_ske, test_block, DM_general, DM_param,
 
 # pre-process
 def pre_proc(tau, block):
-    '''1-exp(tau)'''
+    '''1-exp(-tau)'''
     tau   = np.array(tau)
     block = np.array(block)
     return (1-np.exp(-1*tau), block)
@@ -202,12 +202,12 @@ for ii in range(nrange):
     
     # generating cdf of skewers
     fig, axes = plt.subplots(1, 1, figsize=(12, 5))
-    sort_test = np.sort(1-test_ske[ii])
-    sort_outp = np.sort(1-test_outp[ii])
+    sort_test = np.sort(test_ske[ii].max()-test_ske[ii])
+    sort_outp = np.sort(test_outp[ii].max()-test_outp[ii])
     axes.hist(sort_outp/sort_outp[-1], bins=100, density=True,
-              histtype='step', cumulative=True, label='Predicted');
+              histtype='step', label='Predicted')
     axes.hist(sort_test/sort_test[-1], bins=100, density=True,
-              histtype='step', cumulative=True, label='Real', alpha=0.5);
+              histtype='step', label='Real', alpha=0.5)
     axes.set_xlabel(r'normalized F', fontsize=18)
     axes.set_ylabel(r'cdf', fontsize=18)
     axes.legend(fontsize=18, bbox_to_anchor=(1.26,0.75) )
