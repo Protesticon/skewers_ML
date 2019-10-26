@@ -47,12 +47,12 @@ def get_residual_network() -> torch.nn.Module:
             self.relu = torch.nn.ReLU(inplace=True)
             self.layer1 = self.make_layer(block, 16, layers[0])
             self.layer2 = self.make_layer(block, 32, layers[1], 2)
-            #self.layer3 = self.make_layer(block, 64, layers[2], 2)
             self.avg_pool = nn.AvgPool3d(4)
             self.fc = nn.Linear(64, 15)
             self.drop_layer = nn.Dropout(p=0.1)
             self.fc2 = nn.Linear(15, 5)
             self.fc3 = nn.Linear(5, 1)
+            self.fc_dense = nn.Linear(9**3, 1)
 
         def make_layer(self, block, out_channels, blocks, stride=1):
             downsample = None
@@ -68,22 +68,23 @@ def get_residual_network() -> torch.nn.Module:
             return nn.Sequential(*layers)
 
         def forward(self, x):
-            out = self.conv(x)
-            out = self.bn(out)
-            out = self.relu(out)
-            out = self.layer1(out) #residual layer 1
-            out = self.drop_layer(out)
-            out = self.layer2(out) #residual layer 2
-            out = self.avg_pool(out)
-            out = out.view(out.size(0), -1)
-            out = self.fc(out)
-            out = self.drop_layer(out)
-            out = self.fc2(out)
-            out = self.drop_layer(out)
-            out = self.fc3(out)
-            
-          #  out = self.drop_layer(out)
-           # out = self.log_std(out)
+            if True:
+                out = self.conv(x)
+                out = self.bn(out)
+                out = self.relu(out)
+                out = self.layer1(out) #residual layer 1
+                out = self.drop_layer(out)
+                out = self.layer2(out) #residual layer 2
+                out = self.avg_pool(out)
+                out = out.view(out.size(0), -1)
+                out = self.fc(out)
+                out = self.drop_layer(out)
+                out = self.fc2(out)
+                out = self.drop_layer(out)
+                out = self.fc3(out)
+            else:
+                out = x.view(x.size(0), -1)
+                out = self.fc_dense(out)
 
             return out.squeeze(0)
     return ResNet(ResidualBlock,layers=[2,2,2])
