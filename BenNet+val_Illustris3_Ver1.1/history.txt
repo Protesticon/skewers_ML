@@ -1,0 +1,76 @@
+
+
+
+Training History Record,
+Time: 2019-10-26 11:48:13
+Train Frac: 18000000/216000000
+Real Train Frac: 17192100/216000000
+Val Frac: 540000/216000000
+Real Val Frac: 516050/216000000
+Input Size: [ 9  9 67]
+Training Field: 1-exp(-tau), tau<3
+Loss: SmoothL1Loss
+Optimizer: Adam
+Learning Rate: 0.0001
+
+
+Training History Record,
+Time: 2019-10-26 13:27:25
+Train Frac: 12000000/216000000
+Real Train Frac: 11454550/216000000
+Val Frac: 540000/216000000
+Real Val Frac: 514750/216000000
+Input Size: [ 9  9 67]
+Training Field: 1-exp(-tau), tau<3
+Loss: SmoothL1Loss
+Optimizer: Adam
+Learning Rate: 0.0001
+Epoch 1/10:
+	Training loss: 0.008804568839839778,  2019-10-26, 22:08:45
+	Validation loss: 0.017650611228324273,  2019-10-26, 22:18:09
+	Lowest val loss: 0.017650611228324273,  2019-10-26, 22:18:09
+Epoch 2/10:
+	Training loss: 0.006370002357387029,  2019-10-27, 06:55:05
+	Validation loss: 0.018157985982283947,  2019-10-27, 07:04:28
+	Lowest val loss: 0.017650611228324273,  2019-10-26, 22:18:09
+Epoch 3/10:
+	Training loss: 0.005717150170481733,  2019-10-27, 15:29:53
+	Validation loss: 0.018520395829531543,  2019-10-27, 15:38:43
+	Lowest val loss: 0.017650611228324273,  2019-10-26, 22:18:09
+Epoch 4/10:
+	Training loss: 0.005341634888262642,  2019-10-27, 23:52:29
+	Validation loss: 0.019253071083837867,  2019-10-28, 00:01:21
+	Lowest val loss: 0.017650611228324273,  2019-10-26, 22:18:09
+Epoch 5/10:
+	Training loss: 0.0050891135479635245,  2019-10-28, 08:14:31
+	Validation loss: 0.01903448115070889,  2019-10-28, 08:23:22
+	Lowest val loss: 0.017650611228324273,  2019-10-26, 22:18:09
+
+
+Training History Record,
+Time: 2019-10-28 08:26:40
+Train Frac: 18000000/216000000
+Real Train Frac: 17183750/216000000
+Val Frac: 540000/216000000
+Real Val Frac: 515700/216000000
+Input Size: [ 9  9 67]
+Training Field: 1-exp(-tau), tau<3
+Loss: SmoothL1Loss
+Optimizer: Adam
+Learning Rate: 0.0001
+Epoch 1/10:
+	Training loss: 0.008140441360236278,  2019-10-28, 20:53:25
+	Validation loss: 0.01892832082794869,  2019-10-28, 21:02:50
+	Lowest val loss: 0.01892832082794869,  2019-10-28, 21:02:50
+
+
+Test History Record:
+	Test of the training at 2019-10-26 13:27:25
+	Test batch size: 50
+	Test loss: 0.017404901291965872,  2019-10-29, 02:18:53
+
+
+Test History Record:
+	Test of the training at 2019-10-28 08:26:40
+	Test batch size: 50
+	Test loss: 0.009354650153454713,  2019-10-29, 02:27:59
