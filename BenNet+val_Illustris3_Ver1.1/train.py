@@ -24,9 +24,7 @@ def train(train_ske, train_block, DM_general, DM_param,
         # get the targets;
         targets = train_data.reshape((batch_size, 1)).to(device)
         # x,y,z are the central coordinates of each input DM cuboid
-        x = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 0]
-        y = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 1]
-        z = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 2]
+        x, y, z = train_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
         # make coordinate index, retrieve input dark matter
         batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_param)
         inputs = DM_general[batch_grids].to(device)
@@ -36,7 +34,7 @@ def train(train_ske, train_block, DM_general, DM_param,
         loss = criterion(outputs, targets)
         
         # record loss
-        losses.update(loss.item(), inputs.size(0))
+        losses.update(loss.item(), batch_size)
 
         # zero the parameter gradients
         optimizer.zero_grad()
@@ -47,7 +45,7 @@ def train(train_ske, train_block, DM_general, DM_param,
             print ("Epoch [{}/{}], Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
                    .format(epoch+1, num_epochs, i+1,
                            train_ske.shape[0], loss.item(), time.time()-start_time))
-        if (i+1) % 10000 ==0: #train_ske.shape[0]
+        if (i+1) % 10000 == 0: 
             print ("SAVING MODEL!")
             torch.save(model.state_dict(),
                        "params/HyPhy_%s"%time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
