@@ -22,7 +22,7 @@ def make_batch_grids(x, y, z, batch_size, train_size, DM_param):
     ci = np.array([0,1,2,3]).repeat(train_size.prod()*batch_size).reshape(4,batch_size,train_size[0],train_size[1],train_size[2]).transpose(1,0,2,3,4)
     cx = x_range.repeat(train_size[[1,2]].prod()).reshape(batch_size,1,train_size[1],train_size[0],train_size[2]).transpose(0,1,2,3,4).repeat(4, axis=1)
     cy = y_range.repeat(train_size[[2,0]].prod()).reshape(batch_size,1,train_size[0],train_size[2],train_size[1]).transpose(0,1,4,2,3).repeat(4, axis=1)
-    cz = z_range.repeat(train_size[[0,1]].prod()).reshape(batch_size,1,train_size[2],train_size[0],train_size[1]).transpose(0,1,3,4,2).repeat(4, axis=1)
+    cz = z_range.repeat(train_size[[0,1]].prod()).reshape(batch_size,1,train_size[2],train_size[1],train_size[0]).transpose(0,1,3,4,2).repeat(4, axis=1)
     
     return tuple([ci, cx, cy, cz])
 
