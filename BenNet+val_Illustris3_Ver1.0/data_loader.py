@@ -79,7 +79,7 @@ def load_skewers(Path, FileName, DM_param):
     To load original skewers data in shape of [number, length in pixels]. Generating each coordinate [x, y, 0] simultaneously. Output: skewers and coordinate.
     '''
     # read in skewers and make coordinates of the skewers
-    ske   = np.loadtxt(Path/FileName)
+    ske   = np.load(Path/FileName)
     ax = np.arange(DM_param.pix)
     block = np.array(np.meshgrid(ax, ax, ax)).transpose(2,1,3,0).reshape(-1,DM_param.pix,3)
     del ax
