@@ -83,9 +83,8 @@ def load_skewers(Path, FileName, train_ousize, DM_param):
     # read in skewers and make coordinates of the skewers
     ske  = np.loadtxt(Path/FileName)
     nx, ny, nz = (DM_param.pix / train_ousize).astype('int')
-    ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], ske.shape[1]).transpose(0,2,1,3,4)\
-                    .reshape(-1, train_ousize[[0,1]].prod(), nz, train_ousize[2])
-    ske = ske.transpose(0,2,1,3).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
+    ske.reshape(nx, train_ousize[0], ny, train_ousize[1], nz, train_ousize[2])\
+        .transpose(0, 2, 4, 1, 3, 5).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
 
     x = (np.arange(nx)*(train_ousize[0]) + (train_ousize[0]-1)/2)
     y = (np.arange(ny)*(train_ousize[1]) + (train_ousize[1]-1)/2)

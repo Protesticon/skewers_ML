@@ -69,9 +69,9 @@ def get_residual_network() -> torch.nn.Module:
 
         def make_layer(self, block, out_channels, blocks, stride=1):
             downsample = None
-            kernel_size = (3,3,5)
+            kernel_size = (1,1,3)
             if (stride != 1) or (self.in_channels != out_channels):
-                kernel_size=(3,3,7)
+                kernel_size=(1,1,13)
                 downsample = torch.nn.Sequential(
                     conv3x3(self.in_channels, out_channels, stride=stride, kernel_size=kernel_size),
                     torch.nn.BatchNorm3d(out_channels))

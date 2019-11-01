@@ -14,16 +14,16 @@ DM_name = ['DMdelta_Illustris3_L75_N600.fits',
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
             'vz_cic_Illustris3_L75_N600.fits']
-ske_name = 'spectra_Illustris3_N600.dat'
+ske_name = 'spectra_Illustris3_N600.npy'
 
 
 
 # hyper parameters
-train_len  = 30000
-val_len    = 900
-test_len   = 400
-train_insize = np.array([25, 25, 71]) # x, y, z respctively'
-train_ousize = np.array([5, 5, 5]) # x, y, z respctively
+train_len  = 3000
+val_len    = 1000
+test_len   = 1000
+train_insize = np.array([15, 15, 67]) # x, y, z respctively'
+train_ousize = np.array([1, 1, 1]) # x, y, z respctively
 batch_size = 10
 learning_rate = 0.0001
 num_epochs = 10
@@ -97,9 +97,9 @@ with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", localtime))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nReal Train Frac: {}/{}'.format(train_len*train_ousize.prod(), len(ske.flatten())))
+    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske)*batch_size, len(ske.flatten())))
     f.writelines('\nVal Frac: {}/{}'.format(val_len*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nReal Val Frac: {}/{}'.format(val_len*train_ousize.prod(), len(ske.flatten())))
+    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske)*batch_size, len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_insize))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
     f.writelines('\nLoss: %s'%criterion.__class__.__name__)
