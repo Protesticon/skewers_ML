@@ -14,7 +14,7 @@ DM_name = ['DMdelta_Illustris3_L75_N600.fits',
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
             'vz_cic_Illustris3_L75_N600.fits']
-ske_name = 'spectra_Illustris3_N600.dat'
+ske_name = 'spectra_Illustris3_N600.npy'
 
 
 
