@@ -24,7 +24,7 @@ def test(test_ske, test_block, DM_general, DM_param,
         for i, test_data in enumerate(test_ske, 0):
 
             # get the targets;
-            targets = test_data.reshape((test_batch, 1)).to(device)
+            targets = test_data.to(device)
             # x,y,z are the central coordinates of each input DM cube
             x, y, z = test_block[(i*test_batch+np.arange(test_batch)).astype('int')].transpose()
             # make coordinate index, retrieve input dark matter

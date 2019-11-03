@@ -10,7 +10,7 @@ from val import *
 
 # Path and data file name
 folder  = Path.cwd().parent / 'Illustris3'
-DM_name = ['DMdelta_Illustris3_L75_N600.fits', 
+DM_name = ['DMdelta_Illustris3_L75_N600_v2.fits', 
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
             'vz_cic_Illustris3_L75_N600.fits']
@@ -19,12 +19,12 @@ ske_name = 'spectra_Illustris3_N600.npy'
 
 
 # hyper parameters
-train_len  = 3000
-val_len    = 1000
-test_len   = 1000
-train_insize = np.array([15, 15, 67]) # x, y, z respctively'
-train_ousize = np.array([1, 1, 1]) # x, y, z respctively
-batch_size = 10
+train_len  = 400000
+val_len    = 20000
+test_len   = 20000
+train_insize = np.array([15, 15, 71]) # x, y, z respctively
+train_ousize = np.array([5, 5, 5]) # x, y, z respctively
+batch_size = 40
 learning_rate = 0.0001
 num_epochs = 10
 localtime = time.localtime()
@@ -34,7 +34,7 @@ if ~(train_insize%2).all():
 # pre-process
 def pre_proc(tau, block):
     '''tau'''
-    bln = np.ones(len(block),dtype='bool')
+    bln = np.ones(len(block), dtype='bool')
     return (tau[bln],  block[bln])
 
 

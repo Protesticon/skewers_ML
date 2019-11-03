@@ -20,7 +20,6 @@ def narrow_tensor(tensorA, tensorB):
 
 #basic convolutional block
 def conv3x3(in_channels, out_channels, stride=1, kernel_size=(3,3,3)):
-    print(kernel_size, stride)
     return nn.Conv3d(in_channels, out_channels, kernel_size, 
                      stride=stride, padding=0, bias=False)
 
@@ -61,7 +60,7 @@ def get_residual_network() -> torch.nn.Module:
             self.conv1 = conv3x3(4, 16)
             self.layer1 = self.make_layer(block, 16, layers[0])
             self.layer2 = self.make_layer(block, 32, layers[1], stride=1)
-            self.conv2 = conv3x3(32, 8, kernel_size=(1,1,35))
+            self.conv2 = conv3x3(32, 8, kernel_size=(1,1,41))
             self.conv3 = conv3x3(8, 1)
             self.bn = torch.nn.BatchNorm3d(16)
             self.relu = torch.nn.ReLU(inplace=True)
@@ -98,7 +97,7 @@ def get_residual_network() -> torch.nn.Module:
 
             return out.squeeze(1)
         
-    return ResNet(ResidualBlock,layers=[2,2])
+    return ResNet(ResidualBlock,layers=[2,1])
 
 
 

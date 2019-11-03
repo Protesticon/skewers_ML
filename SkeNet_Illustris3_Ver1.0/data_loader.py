@@ -81,9 +81,9 @@ def load_skewers(Path, FileName, train_ousize, DM_param):
     To load original skewers data in shape of [number, length in pixels]. Generating each coordinate [x, y, 0] simultaneously. Output: skewers and coordinate.
     '''
     # read in skewers and make coordinates of the skewers
-    ske  = np.load(Path/FileName)
+    ske = np.load(Path/FileName)
     nx, ny, nz = (DM_param.pix / train_ousize).astype('int')
-    ske.reshape(nx, train_ousize[0], ny, train_ousize[1], nz, train_ousize[2])\
+    ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], nz, train_ousize[2])\
         .transpose(0, 2, 4, 1, 3, 5).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
 
     x = (np.arange(nx)*(train_ousize[0]) + (train_ousize[0]-1)/2)
@@ -104,10 +104,11 @@ def divide_data(ske, train_ousize, train_len, val_len, test_len, localtime):
     randomly selet the training set, validation set, and test set.
     '''
     import time
-    max_sample = np.array(ske.shape).produ() / train_ousize.prod()
+    max_sample = np.array(ske.shape).prod() / train_ousize.prod()
     if max_sample < (train_len+val_len+test_len):
         raise ValueError('Taining + validation + test samples more than the total.')
-    waste_len = max_sample - train_len - val_len - test_len
+    waste_len = int(max_sample - train_len - val_len - test_len)
+    print(max_sample)
     train_arr = np.ones(train_len)
     val_arr   = np.ones(val_len)*2
     test_arr  = np.ones(test_len)*3
@@ -136,8 +137,6 @@ def load_train(ske, block, id_seperate, batch_size, pre_proc):
     np.random.set_state(state)
     np.random.shuffle( train_ske )
     
-    train_ske   = train_ske.flatten()
-    train_block = train_block.reshape(-1, 3)
     train_ske, train_block = pre_proc(train_ske, train_block)
     train_len1  = len(train_ske) - len(train_ske)%batch_size
     train_ske   = train_ske[:train_len1]
@@ -162,8 +161,6 @@ def load_val(ske, block, id_seperate, batch_size, pre_proc):
     np.random.set_state(state)
     np.random.shuffle( val_ske )
 
-    val_ske = val_ske.flatten()
-    val_block = val_block.reshape(-1, 3)
     val_ske, val_block = pre_proc(val_ske, val_block)
     val_len1  = len(val_ske) - len(val_ske)%batch_size
     val_ske   = val_ske[:val_len1]
@@ -187,9 +184,7 @@ def load_test(ske, block, id_seperate, batch_size):
     np.random.shuffle( test_block )
     np.random.set_state(state)
     np.random.shuffle( test_ske )
-
-    test_ske   = test_ske.flatten()
-    test_block = test_block.reshape(-1, 3)
+    
     test_ske = list(chunked( test_ske, batch_size )) 
 
     return (test_ske, test_block)

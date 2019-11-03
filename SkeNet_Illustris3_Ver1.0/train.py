@@ -22,7 +22,7 @@ def train(train_ske, train_block, DM_general, DM_param,
 
     for i, train_data in enumerate(train_ske, 0):
         # get the targets;
-        targets = train_data.reshape((batch_size, 1)).to(device)
+        targets = train_data.to(device)
         # x,y,z are the central coordinates of each input DM cuboid
         x, y, z = train_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
         # make coordinate index, retrieve input dark matter
