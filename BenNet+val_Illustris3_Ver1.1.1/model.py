@@ -1,36 +1,23 @@
-#imports for model
-import os
-import time
-import matplotlib.pyplot as plt
-import numpy as np
+# imports for model
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
 
-def narrow_tensor(tensorA, tensorB):
-    '''
-    to narrow tensorA to be like tensorB by deleting border elments 
-    '''
-    Ashape = np.array(tensorA.shape[2:5])
-    Bshape = np.array(tensorB.shape[2:5])
-    dx, dy, dz = ((Ashape-Bshape)//2)
-    tensorA = tensorA[:,:,dx:Ashape[0]-dx,dy:Ashape[1]-dy,dz:Ashape[2]-dz]
-    #print(tensorA.shape, tensorB.shape)
-    return tensorA
 
 #basic convolutional block
-def conv3x3(in_channels, out_channels, stride=1, kernel_size=(3,3,3)):
-    return nn.Conv3d(in_channels, out_channels, kernel_size, 
-                     stride=stride, padding=0, bias=False)
+def conv3x3(in_channels, out_channels, stride=1):
+    return nn.Conv3d(in_channels, out_channels, kernel_size=3,
+                     stride=stride, padding=1, bias=False)
+
+
 
 #basic residual block
 class ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, downsample=None):
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
         super(ResidualBlock, self).__init__()
         self.conv1 = conv3x3(in_channels, out_channels, stride)
         self.bn1 = nn.BatchNorm3d(out_channels)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(out_channels, out_channels, kernel_size=kernel_size)
+        self.conv2 = conv3x3(out_channels, out_channels)
         self.bn2 = nn.BatchNorm3d(out_channels)
         self.downsample = downsample
         
@@ -43,58 +30,60 @@ class ResidualBlock(nn.Module):
         out = self.bn2(out)
         if self.downsample:
             residual = self.downsample(x)
-        
-        residual = narrow_tensor(residual, out)
         out += residual
         out = self.relu(out)
-        
         return out
-    
 
-#The SkeNet!
+
+#The HYPHY network!
 def get_residual_network() -> torch.nn.Module:
-    layers= [2, 1]
+    layers= [2, 2, 2]
     class ResNet(torch.nn.Module):
         def __init__(self, block, layers = layers, num_classes=1):
             super(ResNet, self).__init__()
             self.in_channels = 16
-            self.conv1 = conv3x3(4, 16)
-            self.layer1 = self.make_layer(block, 16, layers[0])
-            self.layer2 = self.make_layer(block, 32, layers[1], stride=1)
-            self.conv2 = conv3x3(32, 8, kernel_size=(1,1,41))
-            self.conv3 = conv3x3(8, 1)
+            self.conv = conv3x3(4, 16)
             self.bn = torch.nn.BatchNorm3d(16)
             self.relu = torch.nn.ReLU(inplace=True)
+            self.layer1 = self.make_layer(block, 16, layers[0])
+            self.layer2 = self.make_layer(block, 32, layers[1], 2)
+            self.avg_pool = nn.AvgPool3d(4)
+            self.fc = nn.Linear(256, 64)
+            self.drop_layer = nn.Dropout(p=0.1)
+            self.fc2 = nn.Linear(64, 8)
+            self.fc3 = nn.Linear(8, 1)
 
         def make_layer(self, block, out_channels, blocks, stride=1):
             downsample = None
-            kernel_size = (1,1,3)
             if (stride != 1) or (self.in_channels != out_channels):
-                kernel_size=(1,1,13)
                 downsample = torch.nn.Sequential(
-                    conv3x3(self.in_channels, out_channels, stride=stride, kernel_size=kernel_size),
+                    conv3x3(self.in_channels, out_channels, stride=stride),
                     torch.nn.BatchNorm3d(out_channels))
             layers = []
-            layers.append(block(self.in_channels, out_channels, kernel_size, stride, downsample))
+            layers.append(block(self.in_channels, out_channels, stride, downsample))
             self.in_channels = out_channels
             for i in range(1, blocks):
-                layers.append(block(out_channels, out_channels, kernel_size))
+                layers.append(block(out_channels, out_channels))
             return nn.Sequential(*layers)
 
         def forward(self, x):
-            
-            out = self.conv1(x)
-            out = self.bn(out)
-            out = self.relu(out)
-            out = self.layer1(out) #residual layer 1
-            out = self.layer2(out) #residual layer 2
-            out = self.conv2(out)
-            out = self.relu(out)
-            out = self.conv3(out)
+            if True:
+                out = self.conv(x)
+                out = self.bn(out)
+                out = self.relu(out)
+                out = self.layer1(out) #residual layer 1
+                out = self.drop_layer(out)
+                out = self.layer2(out) #residual layer 2
+                out = self.avg_pool(out)
+                out = out.view(out.size(0), -1)
+                out = self.fc(out)
+                out = self.drop_layer(out)
+                out = self.fc2(out)
+                out = self.drop_layer(out)
+                out = self.fc3(out)
 
-            return out.squeeze(1)
-        
-    return ResNet(ResidualBlock,layers=[2,1])
+            return out.squeeze(0)
+    return ResNet(ResidualBlock,layers=[2,2,2])
 
 
 

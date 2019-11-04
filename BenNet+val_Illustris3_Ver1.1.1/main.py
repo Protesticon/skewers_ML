@@ -19,24 +19,22 @@ ske_name = 'spectra_Illustris3_N600.npy'
 
 
 # hyper parameters
-train_len  = 400000
-val_len    = 20000
-test_len   = 20000
-train_insize = np.array([15, 15, 71]) # x, y, z respctively
-train_ousize = np.array([5, 5, 5]) # x, y, z respctively
-batch_size = 40
+train_len  = 40000
+val_len    = 900
+test_len   = 400
+train_size = np.array([9, 9, 67]) # x, y, z respctively
+batch_size = 50
 learning_rate = 0.0001
 num_epochs = 10
 localtime = time.localtime()
-if ~(train_insize%2).all():
+if ~(train_size%2).all():
     raise ValueError('train size scannot be even.')
 
 # pre-process
 def pre_proc(tau, block):
-    '''1-exp(-tau)'''
-    bln = np.ones(len(block), dtype='bool')
-    tau = 1 - np.exp(-1*tau)
-    return (tau[bln],  block[bln])
+    '''1-exp(-tau), tau<3'''
+    bln = tau<3
+    return (1-np.exp(-tau[bln]), block[bln])
 
 
 
@@ -51,29 +49,31 @@ print('Loading dark matter...')
 DM_general = load_DM(folder, DM_name)
 # basic paramters
 DM_param.pix  = len(DM_general[0])
-DM_param.len  = 75 # in Mpc/h
-DM_param.reso = DM_param.len / DM_param.pix # in Mpc/h
-# test 
-if DM_general.shape[1]<train_insize.min():
+DM_param.len  = 75*1000 # in kpc/h
+DM_param.reso = DM_param.len / DM_param.pix # in kpc/h
+# test
+if DM_general.shape[1]<train_size.min():
     raise ValueError('DarkMatter cube size',
-        DM_general.shape, 'is too small for train size', train_insize, '.')
+        DM_general.shape, 'is too small for train size', train_size, '.')
 DM_general = torch.tensor(DM_general).float()
 
 
 # load skewers
 print('Loading skewers...')
-ske, block = load_skewers(folder, ske_name, train_ousize, DM_param)
+ske, block = load_skewers(folder, ske_name, DM_param)
 # basic parameters
 ske_len = ske.shape[1]
 
 
 # divide the sample to training, validation set, and test set.
 print('Setting training and validation set...')
-id_seperate = divide_data(ske, train_ousize, train_len, val_len, test_len, localtime)
+id_seperate = divide_data(ske, train_len, val_len, test_len, localtime)
 
 train_ske, train_block = load_train(ske, block, id_seperate, batch_size, pre_proc)
+train_ske = torch.FloatTensor(train_ske)
 
 val_ske, val_block = load_val(ske, block, id_seperate, batch_size, pre_proc)
+val_ske = torch.FloatTensor(val_ske)
 
 del id_seperate
 
@@ -90,18 +90,18 @@ curr_lr = learning_rate
 start_time = time.time()
 val_time   = localtime
 
-lowest_losses = 9999.0
+lowest_losses = 999.0
 lowest_time   = localtime
 
 print('\nStart Training:')
 with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", localtime))
-    f.writelines('\nTrain Frac: {}/{}'.format(train_len*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske)*batch_size*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nVal Frac: {}/{}'.format(val_len*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske)*batch_size*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nInput Size: %s'%str(train_insize))
+    f.writelines('\nTrain Frac: {}/{}'.format(train_len*ske_len, len(ske.flatten())))
+    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske)*batch_size, len(ske.flatten())))
+    f.writelines('\nVal Frac: {}/{}'.format(val_len*ske_len, len(ske.flatten())))
+    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske)*batch_size, len(ske.flatten())))
+    f.writelines('\nInput Size: %s'%str(train_size))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
     f.writelines('\nLoss: %s'%criterion.__class__.__name__)
     f.writelines('\nOptimizer: %s'%optimizer.__class__.__name__)
@@ -112,18 +112,18 @@ for epoch in range(num_epochs):
     # train for one epoch
     print("Begin Training Epoch {}".format(epoch+1))
     train_losses = train(train_ske, train_block, DM_general, DM_param,
-                    batch_size, train_insize, model, criterion, optimizer,
+                    batch_size, train_size, model, criterion, optimizer,
                     num_epochs, epoch, device, start_time, localtime)
     with open('history.txt', 'a') as f:
         f.writelines('\nEpoch {}/{}:'.format(epoch+1, num_epochs))
-        f.writelines('\n\tTraining loss : %s,  '%str(train_losses)\
+        f.writelines('\n\tTraining loss: %s,  '%str(train_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
     f.close()
 
     # evaluate on validation set
     print("Begin Validation @ Epoch {}".format(epoch+1))
     val_losses = validate(val_ske, val_block, DM_general, DM_param,
-                batch_size, train_insize, model, criterion, device, start_time)
+                batch_size, train_size, model, criterion, device, start_time)
     val_time   = time.localtime()
 
     # remember best prec@1 and save checkpoint if desired

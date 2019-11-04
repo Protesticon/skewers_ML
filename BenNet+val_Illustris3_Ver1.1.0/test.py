@@ -65,17 +65,16 @@ DM_name = ['DMdelta_Illustris3_L75_N600.fits',
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
             'vz_cic_Illustris3_L75_N600.fits']
-ske_name = 'spectra_Illustris3_N600.dat'
+ske_name = 'spectra_Illustris3_N600.npy'
 
 
 
 # hyper parameters
-train_size = np.array([9, 9, 17]) # x, y, z respctively
+train_size = np.array([9, 9, 67]) # x, y, z respctively
 test_batch = 50
 learning_rate = 0.0001
 num_epochs = 10
-localtime_n = ['2019-10-15 13:21:22', '2019-10-20 03:01:18', '2019-10-20 15:45:09',
-              '2019-10-21 03:33:52', '2019-10-22 11:56:38', '2019-10-23 11:29:50']
+localtime_n = ['2019-10-26 13:27:25', '2019-10-28 08:26:40']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
     if ~(train_size%2).all():

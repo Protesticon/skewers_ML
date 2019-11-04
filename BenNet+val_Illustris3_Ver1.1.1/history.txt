@@ -1,0 +1,25 @@
+Training History Record,
+Time: 2019-11-03 03:45:29
+Train Frac: 24000000/216000000
+Real Train Frac: 22905050/216000000
+Val Frac: 540000/216000000
+Real Val Frac: 516300/216000000
+Input Size: [ 9  9 67]
+Training Field: 1-exp(-tau), tau<3
+Loss: SmoothL1Loss
+Optimizer: Adam
+Learning Rate: 0.0001
+Epoch 1/10:
+	Training loss: 0.008040607215752428,  2019-11-03, 20:12:30
+	Validation loss: 0.01997943162331837,  2019-11-03, 20:21:16
+	Lowest val loss: 0.01997943162331837,  2019-11-03, 20:21:16
+Epoch 2/10:
+	Training loss: 0.005774546212838645,  2019-11-04, 12:46:57
+	Validation loss: 0.01855691920559529,  2019-11-04, 12:55:47
+	Lowest val loss: 0.01855691920559529,  2019-11-04, 12:55:47
+
+
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test batch size: 50
+	Test loss: 0.006683911916203821,  2019-11-04, 13:40:36
