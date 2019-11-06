@@ -102,6 +102,7 @@ with open('history.txt', 'a') as f:
     f.writelines('\nVal Frac: {}/{}'.format(val_len*train_ousize.prod(), len(ske.flatten())))
     f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske)*batch_size*train_ousize.prod(), len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_insize))
+    f.writelines('\nOutput Size: %s'%str(train_ousize))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
     f.writelines('\nLoss: %s'%criterion.__class__.__name__)
     f.writelines('\nOptimizer: %s'%optimizer.__class__.__name__)
