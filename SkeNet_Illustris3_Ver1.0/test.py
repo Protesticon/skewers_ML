@@ -18,7 +18,7 @@ def test(test_ske, test_block, DM_general, DM_param,
 
     losses = AverageMeter()
     
-    test_outp  = np.zeros(test_ske.shape).flatten()
+    test_outp  = np.zeros(test_ske.shape)
 
     with torch.no_grad():
         for i, test_data in enumerate(test_ske, 0):
@@ -26,7 +26,7 @@ def test(test_ske, test_block, DM_general, DM_param,
             # get the targets;
             targets = test_data.to(device)
             # x,y,z are the central coordinates of each input DM cube
-            x, y, z = test_block[(i*test_batch+np.arange(test_batch)).astype('int')].transpose()
+            x, y, z = test_block[(i*test_batch+np.arange(test_batch)).astype('int')].T
             # make coordinate index, retrieve input dark matter
             batch_grids = make_batch_grids(x, y, z, test_batch, train_size, DM_param)
             inputs = DM_general[batch_grids].to(device)
@@ -38,13 +38,13 @@ def test(test_ske, test_block, DM_general, DM_param,
             losses.update(loss.item(), test_batch)
             
             # record outputs
-            test_outp[i*test_batch:(i+1)*test_batch] = outputs.detach().cpu().numpy().flatten()
+            test_outp[i] = outputs.detach().cpu().numpy()
 
             if (i+1) % 100 == 0:
-                print ("Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
+                print("Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
                     .format(i+1, test_ske.shape[0], loss.item(), time.time()-start_time))
     
-    test_outp = test_outp.reshape(-1, DM_param.pix)
+    test_outp = test_outp.reshape(-1, test_ske.shape[-3], test_ske.shape[-2], test_ske.shape[-1])
 
     return test_outp, losses.avg
 
@@ -61,29 +61,28 @@ def pre_proc(tau, block):
 
 # Path and data file name
 folder  = Path.cwd().parent / 'Illustris3'
-DM_name = ['DMdelta_Illustris3_L75_N600.fits', 
+DM_name = ['DMdelta_Illustris3_L75_N600_v2.fits', 
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
             'vz_cic_Illustris3_L75_N600.fits']
-ske_name = 'spectra_Illustris3_N600.dat'
+ske_name = 'spectra_Illustris3_N600.npy'
 
 
 
 # hyper parameters
-train_size = np.array([9, 9, 67]) # x, y, z respctively
-test_batch = 50
-learning_rate = 0.0001
-num_epochs = 10
-localtime_n = ['2019-10-26 13:27:25', '2019-10-28 08:26:40']
+train_insize = np.array([15, 15, 71]) # x, y, z respctively
+train_ousize = np.array([5, 5, 5]) # x, y, z respctively
+test_batch = 40
+localtime_n = ['2019-11-06 07:18:43']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
-    if ~(train_size%2).all():
+    if ~(train_insize%2).all():
         raise ValueError('train size scannot be even.')
 
 
 
     # device used to train the model
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Using device:', device)
 
 
@@ -96,15 +95,15 @@ for localtime_i in localtime_n:
     DM_param.len  = 75 # in Mpc/h
     DM_param.reso = DM_param.len / DM_param.pix # in Mpc/h
     # test
-    if DM_general.shape[1]<train_size.min():
+    if DM_general.shape[1]<train_insize.min():
         raise ValueError('DarkMatter cube size',
-            DM_general.shape, 'is too small for train size', train_size, '.')
+            DM_general.shape, 'is too small for train size', train_insize, '.')
     DM_general = torch.tensor(DM_general).float()
 
 
     # load skewers
     print('Loading skewers...')
-    ske, block = load_skewers(folder, ske_name, DM_param)
+    ske, block = load_skewers(folder, ske_name, train_ousize, DM_param)
     # basic parameters
     ske_len = ske.shape[1]
 
@@ -118,9 +117,7 @@ for localtime_i in localtime_n:
         del aa
     f.close()
 
-    test_ske, test_block = load_test(ske, block, id_seperate, test_batch)
-    test_ske, test_block = pre_proc(test_ske, test_block)
-    test_ske = torch.FloatTensor(test_ske)
+    test_ske, test_block = load_test(ske, block, id_seperate, test_batch, pre_proc)
     del id_seperate
 
 
@@ -144,11 +141,11 @@ for localtime_i in localtime_n:
     # start test
     print('Begin testing...')
     test_outp, test_losses = test(test_ske, test_block, DM_general, DM_param,
-                            test_batch, train_size, model, criterion, device, start_time)
+                            test_batch, train_insize, model, criterion, device, start_time)
 
     print("Test Summary: ")
     print("\tTest loss: {}".format(test_losses))
-
+    '''
     # restore test skewers
     test_ske   = test_ske.numpy().reshape(-1, DM_param.pix)
     test_block = test_block.reshape(-1, DM_param.pix, 3)
@@ -160,6 +157,7 @@ for localtime_i in localtime_n:
         os.makedirs(Path.cwd() / 'test_figs' / ('%s'\
             %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
 
+    
     print('Plotting example skewers...')
     from scipy import constants as C
     v_end  = 0.02514741843009228 * C.speed_of_light / 1e3
@@ -215,7 +213,7 @@ for localtime_i in localtime_n:
             ('spectrum_x%dy%d.png'%(test_block[ii,0,0], test_block[ii,0,1])),
             dpi=200, bbox_inches='tight')
         plt.close()
-
+    '''
     # record this test
     with open('history.txt', 'a') as f:
         f.writelines('\n\n\nTest History Record:')

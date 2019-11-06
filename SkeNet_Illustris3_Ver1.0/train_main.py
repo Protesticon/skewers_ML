@@ -19,9 +19,9 @@ ske_name = 'spectra_Illustris3_N600.npy'
 
 
 # hyper parameters
-train_len  = 400000
-val_len    = 20000
-test_len   = 20000
+train_len  = 400000 # number of tau blocks
+val_len    = 20000  # number of tau blocks
+test_len   = 20000  # number of skewers
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 batch_size = 40
