@@ -25,7 +25,7 @@ test_len   = 20000
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 batch_size = 40
-learning_rate = 0.0001
+learning_rate = 0.001
 num_epochs = 10
 localtime = time.localtime()
 if ~(train_insize%2).all():
@@ -41,7 +41,7 @@ def pre_proc(tau, block):
 
 
 # device used to train the model
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print('Using device:', device)
 
 

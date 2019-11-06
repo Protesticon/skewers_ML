@@ -108,7 +108,6 @@ def divide_data(ske, train_ousize, train_len, val_len, test_len, localtime):
     if max_sample < (train_len+val_len+test_len):
         raise ValueError('Taining + validation + test samples more than the total.')
     waste_len = int(max_sample - train_len - val_len - test_len)
-    print(max_sample)
     train_arr = np.ones(train_len)
     val_arr   = np.ones(val_len)*2
     test_arr  = np.ones(test_len)*3
@@ -160,7 +159,7 @@ def load_val(ske, block, id_seperate, batch_size, pre_proc):
     np.random.shuffle( val_block )
     np.random.set_state(state)
     np.random.shuffle( val_ske )
-
+    
     val_ske, val_block = pre_proc(val_ske, val_block)
     val_len1  = len(val_ske) - len(val_ske)%batch_size
     val_ske   = val_ske[:val_len1]
@@ -184,7 +183,9 @@ def load_test(ske, block, id_seperate, batch_size):
     np.random.shuffle( test_block )
     np.random.set_state(state)
     np.random.shuffle( test_ske )
-    
+
+    test_ske   = test_ske.flatten()
+    test_block = test_block.reshape(-1, 3)
     test_ske = list(chunked( test_ske, batch_size )) 
 
     return (test_ske, test_block)
