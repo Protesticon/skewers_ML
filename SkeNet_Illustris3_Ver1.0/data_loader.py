@@ -15,15 +15,16 @@ def make_batch_grids(x, y, z, batch_size, train_insize, DM_param):
     train_insize: 3d array of int in order of x,y,z, the size of each trained sample.
     '''
     # x,y,z range are coordinates ranges of each training cube
-    x_range = ((x.reshape(batch_size,-1)+(np.arange(train_insize[0])-(train_insize[0]-1)/2))%DM_param.pix).astype('int')
-    y_range = ((y.reshape(batch_size,-1)+(np.arange(train_insize[1])-(train_insize[1]-1)/2))%DM_param.pix).astype('int')
-    z_range = ((z.reshape(batch_size,-1)+(np.arange(train_insize[2])-(train_insize[2]-1)/2))%DM_param.pix).astype('int')
+    lx, ly, lz = train_insize
+    x_range = ((x.reshape(batch_size,1)+(np.arange(lx)-(lx-1)/2))%DM_param.pix).astype('int')
+    y_range = ((y.reshape(batch_size,1)+(np.arange(ly)-(ly-1)/2))%DM_param.pix).astype('int')
+    z_range = ((z.reshape(batch_size,1)+(np.arange(lz)-(lz-1)/2))%DM_param.pix).astype('int')
 
     # cx,cy,cz are coordinates of every points of each training cube, together forming a meshgrid
-    ci = np.array([0,1,2,3]).repeat(train_insize.prod()*batch_size).reshape(4,batch_size,train_insize[0],train_insize[1],train_insize[2]).transpose(1,0,2,3,4)
-    cx = x_range.repeat(train_insize[[1,2]].prod()).reshape(batch_size,1,train_insize[1],train_insize[0],train_insize[2]).transpose(0,1,2,3,4).repeat(4, axis=1)
-    cy = y_range.repeat(train_insize[[2,0]].prod()).reshape(batch_size,1,train_insize[0],train_insize[2],train_insize[1]).transpose(0,1,4,2,3).repeat(4, axis=1)
-    cz = z_range.repeat(train_insize[[0,1]].prod()).reshape(batch_size,1,train_insize[2],train_insize[1],train_insize[0]).transpose(0,1,3,4,2).repeat(4, axis=1)
+    ci = np.array([0,1,2,3]).repeat(lx*ly*lz*batch_size).reshape(4,batch_size,lx,ly,lz).transpose(1,0,2,3,4)
+    cx = x_range.repeat(ly*lz).reshape(batch_size,1,ly,lx,lz).transpose(0,1,2,3,4).repeat(4, axis=1)
+    cy = y_range.repeat(lz*lx).reshape(batch_size,1,lx,lz,ly).transpose(0,1,4,2,3).repeat(4, axis=1)
+    cz = z_range.repeat(lx*ly).reshape(batch_size,1,lz,ly,lx).transpose(0,1,3,4,2).repeat(4, axis=1)
     
     return tuple([ci, cx, cy, cz])
     
