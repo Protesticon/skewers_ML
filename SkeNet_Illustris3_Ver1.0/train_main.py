@@ -26,10 +26,10 @@ train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 batch_size = 40
 learning_rate = 0.001
-num_epochs = 10
+num_epochs = 20
 localtime = time.localtime()
-if ~(train_insize%2).all():
-    raise ValueError('train size scannot be even.')
+
+
 
 # pre-process
 def pre_proc(tau, block):

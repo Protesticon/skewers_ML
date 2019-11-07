@@ -79,13 +79,17 @@ def load_DM(Path, FileName):
 
 def load_skewers(Path, FileName, train_ousize, DM_param):
     '''
-    To load original skewers data in shape of [number, length in pixels]. Generating each coordinate [x, y, 0] simultaneously. Output: skewers and coordinate.
+    To load original skewers data in shape of [number, length in pixels]. Generating each central coordinate [x, y, z] simultaneously. Output: skewers and coordinate.
     '''
     # read in skewers and make coordinates of the skewers
     ske = np.load(Path/FileName)
     nx, ny, nz = (DM_param.pix / train_ousize).astype('int')
     ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], nz, train_ousize[2])\
         .transpose(0, 2, 4, 1, 3, 5).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
+    '''
+    ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], DM_param.pix)\
+        .transpose(0, 2, 1, 3, 4).reshape(nx*ny, train_ousize[0], train_ousize[1], DM_param.pix)
+    '''
 
     x = (np.arange(nx)*(train_ousize[0]) + (train_ousize[0]-1)/2)
     y = (np.arange(ny)*(train_ousize[1]) + (train_ousize[1]-1)/2)
@@ -94,7 +98,7 @@ def load_skewers(Path, FileName, train_ousize, DM_param):
     cx = x.repeat(ny*nz).reshape(nx,ny,nz).transpose(0,1,2).flatten()
     cy = y.repeat(nz*nx).reshape(ny,nz,nx).transpose(2,0,1).flatten()
     cz = z.repeat(nx*ny).reshape(nz,nx,ny).transpose(1,2,0).flatten()
-    block = np.array([cx, cy, cz]).T
+    block = np.array([cx, cy, cz]).T #.reshape(-1, nz, 3)
 
     return ske, block
 
