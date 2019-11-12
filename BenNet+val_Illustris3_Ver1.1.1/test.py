@@ -56,7 +56,7 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
     
     # plotting 1dps of skewers
     # k axis
-    bins = int(10)
+    bins = int(15)
     len_ske = len(test_outp_i)
     rvax_t = np.arange(int(len_ske/2))
     logrv  = np.log10(rvax_t)
@@ -68,9 +68,9 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
     bin_bl = (logrv>=bins_l) & (logrv<bins_r)
     bin_bl[-1,-1] = True
     rvaxis = np.zeros(bins)
-    # 1DPS
-    outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.mean()
-    test4fft = (test_ske_i-test_ske_i.mean())/test_ske_i.mean()
+    # 1dps and pdf
+    outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
+    test4fft = (test_ske_i-test_ske_i.mean())/test_ske_i.std()
     fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(len_ske/2)]
     fft_test = np.absolute(np.fft.fft(test4fft))[:int(len_ske/2)]
     onePS_outp = np.zeros(bins)
@@ -83,26 +83,36 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
     onePS_outp = onePS_outp * 0.5/vaxis[1]/(len_ske/2)
     onePS_test = onePS_test * 0.5/vaxis[1]/(len_ske/2)
     
-    accuracy_i = (np.abs(onePS_outp-onePS_test)/onePS_test).mean()
-    rela_err_i = (np.abs(onePS_outp-onePS_test)/onePS_test).std()
+    accuracy_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).mean()
+    rela_err_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).std()
     
-    fig, axes = plt.subplots(1, 1, figsize=(12, 5))
-    p1, = axes.plot(rvaxis, onePS_outp, label='Predicted')
-    p2, = axes.plot(rvaxis, onePS_test, label='Real', alpha=0.5)
-    axes.set_xlabel(r'$k\ \mathrm{s/km}$', fontsize=18)
-    axes.set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
-    axes.set_xscale('log')
-    axes.set_yscale('log')
+    ffig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    p1, = axes[0].plot(rvaxis, onePS_outp, label='Predicted')
+    p2, = axes[0].plot(rvaxis, onePS_test, label='Real', alpha=0.5)
+    axes[0].set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=18)
+    axes[0].set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
+    axes[0].set_xscale('log')
+    axes[0].set_yscale('log')
     customs = [p1, p2, 
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5),
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5)]
-    axes.legend(customs, [p1.get_label(), p2.get_label(), '$m=%.4f$'%accuracy_i,
-                        '$s=%.4f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.26,0.75) )
+
+    axes[1].hist(test_outp_i, bins=np.arange(0,1,0.05),
+              density=True, histtype='step', label='Predicted')
+    axes[1].hist(test_ske_i, bins=np.arange(0,1,0.05),
+              density=True, histtype='step', label='Real', alpha=0.5)
+    axes[1].set_xlabel(r'normalized F', fontsize=18)
+    axes[1].set_ylabel(r'pdf', fontsize=18)
+    axes[1].set_xlim([-0.05, 1.05])
+    axes[1].legend(fontsize=18, bbox_to_anchor=(1.06,0.75))
+    axes[1].legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
+                        '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,0.75))
     plt.savefig(folder_outp / \
-        ('x%dy%d_1DPS.png'%(test_block_i[0], test_block_i[1])),
+        ('x%dy%d_1DPS&PDF.png'%(test_block_i[0], test_block_i[1])),
         dpi=200, bbox_inches='tight')
+    plt.subplots_adjust(wspace=0.15, hspace=0)
     plt.close()
     
     
@@ -132,31 +142,13 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
                           markerfacecolor='k', markersize=5),
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5)]
-    axes[1].legend(customs, [p1.get_label(), p2.get_label(), '%.4f'%accuracy_i,
-                            '%.4f'%rela_err_i], fontsize=18, bbox_to_anchor=(1.26,0.75))
+    axes[1].legend(customs, [p1.get_label(), p2.get_label(), '%.3f'%accuracy_i,
+                            '%.3f'%rela_err_i], fontsize=18, bbox_to_anchor=(1.26,0.75))
 
     axes[1].get_shared_x_axes().join(axes[1], axes[0])
     plt.subplots_adjust(wspace=0, hspace=0.1)
     plt.savefig(folder_outp / \
         ('x%dy%d_skewer.png'%(test_block_i[0], test_block_i[1])),
-        dpi=200, bbox_inches='tight')
-    plt.close()
-    
-    
-
-    # plotting pdf of skewers
-    fig, axes = plt.subplots(1, 1, figsize=(12, 5))
-    sort_test = np.sort(test_ske_i)
-    sort_outp = np.sort(test_outp_i)
-    axes.hist(sort_outp/sort_outp[-1], bins=np.arange(0,1,0.05),
-              density=True, histtype='step', label='Predicted')
-    axes.hist(sort_test/sort_test[-1], bins=np.arange(0,1,0.05),
-              density=True, histtype='step', label='Real', alpha=0.5)
-    axes.set_xlabel(r'normalized F', fontsize=18)
-    axes.set_ylabel(r'pdf', fontsize=18)
-    axes.set_xlim([-0.05, 1.05])
-    plt.savefig(folder_outp / \
-        ('x%dy%d_pdf.png'%(test_block_i[0], test_block_i[1])),
         dpi=200, bbox_inches='tight')
     plt.close()
     
@@ -166,7 +158,7 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
 
 def test_accuracy(test_block_i, test_outp_i, test_ske_i,
                  vaxis, folder_outp):
-    bins = int(10)
+    bins = int(15)
     len_ske = len(test_outp_i)
     rvax_t = np.arange(int(len_ske/2))
     logrv  = np.log10(rvax_t)
@@ -179,8 +171,10 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
     bin_bl[-1,-1] = True
     rvaxis = np.zeros(bins)
     # 1DPS
-    fft_outp = np.absolute(np.fft.fft(np.exp(-1*test_outp_i)))[:int(len_ske/2)]
-    fft_test = np.absolute(np.fft.fft(np.exp(-1*test_ske_i)))[:int(len_ske/2)]
+    outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
+    test4fft = (test_ske_i-test_ske_i.mean())/test_ske_i.std()
+    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(len_ske/2)]
+    fft_test = np.absolute(np.fft.fft(test4fft))[:int(len_ske/2)]
     onePS_outp = np.zeros(bins)
     onePS_test = np.zeros(bins)
     for ii in range(bins):
@@ -191,7 +185,7 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
     onePS_outp = onePS_outp * 0.5/vaxis[1]/(len_ske/2)
     onePS_test = onePS_test * 0.5/vaxis[1]/(len_ske/2)
     
-    accuracy_i = (np.abs(onePS_outp-onePS_test)/onePS_test).mean()
-    rela_err_i = (np.abs(onePS_outp-onePS_test)/onePS_test).std()
+    accuracy_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).mean()
+    rela_err_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).std()
     
     return accuracy_i, rela_err_i

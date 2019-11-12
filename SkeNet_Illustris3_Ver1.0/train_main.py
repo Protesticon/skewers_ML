@@ -11,25 +11,25 @@ from val import *
 # Path and data file name
 folder  = Path.cwd().parent / 'Illustris3'
 DM_name = ['DMdelta_Illustris3_L75_N600_v2.fits', 
-            'vx_cic_Illustris3_L75_N600.fits',
-            'vy_cic_Illustris3_L75_N600.fits',
-            'vz_cic_Illustris3_L75_N600.fits']
+            'vx_cic_Illustris3_L75_N600_v2.fits',
+            'vy_cic_Illustris3_L75_N600_v2.fits',
+            'vz_cic_Illustris3_L75_N600_v2.fits']
 ske_name = 'spectra_Illustris3_N600.npy'
 
 
 
 # hyper parameters
-train_len  = 400000 # number of tau blocks
-val_len    = 20000  # number of tau blocks
-test_len   = 20000  # number of skewers
+train_len  = 6000 # number of tau blocks
+val_len    = 200  # number of tau blocks
+test_len   = 200  # number of skewers
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
-batch_size = 40
+batch_size = 50
 learning_rate = 0.001
 num_epochs = 20
 localtime = time.localtime()
-
-
+if ~(train_insize%2).all():
+    raise ValueError('train size scannot be even.')
 
 # pre-process
 def pre_proc(tau, block):
@@ -41,7 +41,7 @@ def pre_proc(tau, block):
 
 
 # device used to train the model
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print('Using device:', device)
 
 
@@ -64,16 +64,16 @@ DM_general = torch.tensor(DM_general).float()
 print('Loading skewers...')
 ske, block = load_skewers(folder, ske_name, train_ousize, DM_param)
 # basic parameters
-ske_len = ske.shape[1]
+ske_len = int(ske.shape[-1])
 
 
 # divide the sample to training, validation set, and test set.
 print('Setting training and validation set...')
 id_seperate = divide_data(ske, train_ousize, train_len, val_len, test_len, localtime)
 
-train_ske, train_block = load_train(ske, block, id_seperate, batch_size, pre_proc)
+train_ske, train_block = load_train(ske, block, id_seperate, train_ousize, batch_size, pre_proc)
 
-val_ske, val_block = load_val(ske, block, id_seperate, batch_size, pre_proc)
+val_ske, val_block = load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc)
 
 del id_seperate
 
@@ -95,12 +95,12 @@ lowest_time   = localtime
 
 print('\nStart Training:')
 with open('history.txt', 'a') as f:
-    f.writelines('\n\n\nTraining History Record:')
+    f.writelines('\n\n\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", localtime))
-    f.writelines('\nTrain Frac: {}/{}'.format(train_len*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske)*batch_size*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nVal Frac: {}/{}'.format(val_len*train_ousize.prod(), len(ske.flatten())))
-    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske)*batch_size*train_ousize.prod(), len(ske.flatten())))
+    f.writelines('\nTrain Frac: {}/{}'.format(len(train_ske.flatten()), len(ske.flatten())))
+    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske.flatten()), len(ske.flatten())))
+    f.writelines('\nVal Frac: {}/{}'.format(len(val_ske.flatten()), len(ske.flatten())))
+    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske.flatten()), len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_insize))
     f.writelines('\nOutput Size: %s'%str(train_ousize))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))

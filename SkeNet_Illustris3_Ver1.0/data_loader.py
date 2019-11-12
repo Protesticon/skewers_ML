@@ -84,12 +84,8 @@ def load_skewers(Path, FileName, train_ousize, DM_param):
     # read in skewers and make coordinates of the skewers
     ske = np.load(Path/FileName)
     nx, ny, nz = (DM_param.pix / train_ousize).astype('int')
-    ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], nz, train_ousize[2])\
-        .transpose(0, 2, 4, 1, 3, 5).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
-    '''
     ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], DM_param.pix)\
-        .transpose(0, 2, 1, 3, 4).reshape(nx*ny, train_ousize[0], train_ousize[1], DM_param.pix)
-    '''
+        .transpose(0, 2, 1, 3, 4).reshape(-1, train_ousize[0], train_ousize[1], DM_param.pix)
 
     x = (np.arange(nx)*(train_ousize[0]) + (train_ousize[0]-1)/2)
     y = (np.arange(ny)*(train_ousize[1]) + (train_ousize[1]-1)/2)
@@ -98,7 +94,7 @@ def load_skewers(Path, FileName, train_ousize, DM_param):
     cx = x.repeat(ny*nz).reshape(nx,ny,nz).transpose(0,1,2).flatten()
     cy = y.repeat(nz*nx).reshape(ny,nz,nx).transpose(2,0,1).flatten()
     cz = z.repeat(nx*ny).reshape(nz,nx,ny).transpose(1,2,0).flatten()
-    block = np.array([cx, cy, cz]).T #.reshape(-1, nz, 3)
+    block = np.array([cx, cy, cz]).T.reshape(-1, nz, 3)
 
     return ske, block
 
@@ -109,7 +105,7 @@ def divide_data(ske, train_ousize, train_len, val_len, test_len, localtime):
     randomly selet the training set, validation set, and test set.
     '''
     import time
-    max_sample = np.array(ske.shape).prod() / train_ousize.prod()
+    max_sample = np.array(ske.shape)[0]
     if max_sample < (train_len+val_len+test_len):
         raise ValueError('Taining + validation + test samples more than the total.')
     waste_len = int(max_sample - train_len - val_len - test_len)
@@ -128,12 +124,16 @@ def divide_data(ske, train_ousize, train_len, val_len, test_len, localtime):
 
 
 
-def load_train(ske, block, id_seperate, batch_size, pre_proc):
+def load_train(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     '''
     To load, shuffle and chunk the training set.
     '''
     train_block = block[id_seperate == 1]
     train_ske   = ske[id_seperate == 1]
+    nz = int(ske.shape[-1] / train_ousize[2])
+    train_block = train_block.reshape(-1, 3)
+    train_ske   = train_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2] )\
+            .transpose(0, 3, 1, 2, 4).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
 
     np.random.seed(np.random.randint(0,50))
     state = np.random.get_state()
@@ -152,12 +152,17 @@ def load_train(ske, block, id_seperate, batch_size, pre_proc):
 
 
 
-def load_val(ske, block, id_seperate, batch_size, pre_proc):
+def load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     '''
     To load, shuffle and chunk the validation set.
     '''
     val_block = block[id_seperate == 2]
     val_ske   = ske[id_seperate == 2]
+    
+    nz = int(ske.shape[-1] / train_ousize[2])
+    val_block = val_block.reshape(-1, 3)
+    val_ske   = val_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2] )\
+            .transpose(0, 3, 1, 2, 4).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
 
     np.random.seed(np.random.randint(0,51))
     state = np.random.get_state()
@@ -176,18 +181,17 @@ def load_val(ske, block, id_seperate, batch_size, pre_proc):
 
 
 
-def load_test(ske, block, id_seperate, batch_size, pre_proc):
+def load_test(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     '''
     To load and shuffle the test set.
     '''
     test_block = block[id_seperate == 3]
     test_ske   = ske[id_seperate == 3]
-
-    np.random.seed(52)
-    state = np.random.get_state()
-    np.random.shuffle( test_block )
-    np.random.set_state(state)
-    np.random.shuffle( test_ske )
+    
+    nz = int(ske.shape[-1] / train_ousize[2])
+    test_block = test_block.reshape(-1, 3)
+    test_ske   = test_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2] )\
+            .transpose(0, 3, 1, 2, 4).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
 
     test_ske, test_block = pre_proc(test_ske, test_block)
     test_len1  = len(test_ske) - len(test_ske)%batch_size

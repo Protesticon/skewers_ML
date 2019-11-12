@@ -78,3 +78,15 @@ Epoch 10/10:
 	Lowest val loss: 0.012541042080588293,  2019-11-10, 05:14:20
 
 
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test loss: 0.0066822095920982365,  2019-11-13, 08:35:27
+	Average accuracy: 0.4641913755177628,  2019-11-13, 08:35:27
+	Average relative error: 0.6755147321736437,  2019-11-13, 08:35:27
+
+
+Test History Record:
+	Test of the training at 2019-11-04 14:30:32
+	Test loss: 0.00705785564986248,  2019-11-13, 08:41:49
+	Average accuracy: 0.455081012553707,  2019-11-13, 08:41:49
+	Average relative error: 0.7101094339635726,  2019-11-13, 08:41:49
