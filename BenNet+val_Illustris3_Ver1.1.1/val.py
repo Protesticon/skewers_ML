@@ -24,7 +24,9 @@ def validate(val_ske, val_block, DM_general, DM_param,
             # get the targets;
             targets = val_data.reshape((batch_size, 1)).to(device)
             # x,y,z are the central coordinates of each training DM cube
-            x, y, z = val_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
+            x = val_block[(i*batch_size+np.arange(batch_size)).astype('int'), 0]
+            y = val_block[(i*batch_size+np.arange(batch_size)).astype('int'), 1]
+            z = val_block[(i*batch_size+np.arange(batch_size)).astype('int'), 2]
             # make coordinate index, retrieve input dark matter
             batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_param)
             inputs = DM_general[batch_grids].to(device)

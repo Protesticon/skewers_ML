@@ -24,7 +24,9 @@ def train(train_ske, train_block, DM_general, DM_param,
         # get the targets;
         targets = train_data.reshape((batch_size, 1)).to(device)
         # x,y,z are the central coordinates of each input DM cuboid
-        x, y, z = train_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
+        x = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 0]
+        y = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 1]
+        z = train_block[(i*batch_size+np.arange(batch_size)).astype('int'), 2]
         # make coordinate index, retrieve input dark matter
         batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_param)
         inputs = DM_general[batch_grids].to(device)
