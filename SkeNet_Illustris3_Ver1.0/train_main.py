@@ -83,6 +83,7 @@ model = get_residual_network().float().to(device)
 # loss and optimizer
 criterion = nn.SmoothL1Loss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=2)
 
 
 # Train the model

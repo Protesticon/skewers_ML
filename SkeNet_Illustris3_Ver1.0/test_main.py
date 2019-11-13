@@ -87,11 +87,12 @@ for localtime_i in localtime_n:
 
 
     # load model
+    print('Loading model...')
     model = get_residual_network().float().to(device)
     model.load_state_dict(torch.load('params/params_%s.pkl'\
             %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
-    # model.load_state_dict(torch.load('params/HyPhy_%s.pkl'\
-    #       %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
+    #model.load_state_dict(torch.load('params/HyPhy_%s'\
+    #        %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
 
 
 

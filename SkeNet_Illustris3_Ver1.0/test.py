@@ -19,6 +19,9 @@ def test(test_ske, test_block, DM_general, DM_param,
 
     losses = AverageMeter()
     
+    # switch to eval mode
+    model.eval()
+    
     test_outp  = np.zeros(test_ske.shape)
 
     with torch.no_grad():

@@ -17,6 +17,7 @@ def train(train_ske, train_block, DM_general, DM_param,
     Possible: batch_size, train_size, num_epochs, device
     '''
     losses = AverageMeter()
+    
     # switch to train mode
     model.train()
 
