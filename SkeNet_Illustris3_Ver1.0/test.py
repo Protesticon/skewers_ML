@@ -90,63 +90,47 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
     accuracy_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).mean()
     rela_err_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).std()
     
-    ffig, axes = plt.subplots(1, 2, figsize=(12, 5))
-    p1, = axes[0].plot(rvaxis, onePS_outp, label='Predicted')
-    p2, = axes[0].plot(rvaxis, onePS_test, label='Real', alpha=0.5)
-    axes[0].set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=18)
-    axes[0].set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
-    axes[0].set_xscale('log')
-    axes[0].set_yscale('log')
+    
+    fig = plt.figure(figsize=(12,8))
+    # plot skewers in F
+    axes1 = fig.add_subplot(2,1,1)
+    p1, = axes1.plot(vaxis, test_outp_i, label='Predicted', alpha=0.7 )
+    p2, = axes1.plot(vaxis, test_ske_i, label='Real', alpha=0.5 )
+    axes1.set_xlabel(r'$v$ (km/s)', fontsize=18, labelpad=0)
+    axes1.set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
+    axes1.set_ylim([-0.1, 1.1])
+    axes1.tick_params(labelsize=12, direction='in')
+
+    # plot 1DPS
+    axes2 = fig.add_subplot(2,2,3)
+    axes2.plot(rvaxis, onePS_outp, label='Predicted')
+    axes2.plot(rvaxis, onePS_test, label='Real', alpha=0.5)
+    axes2.set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=18)
+    axes2.set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
+    axes2.set_xscale('log')
+    axes2.set_yscale('log')
+    axes2.tick_params(labelsize=12, direction='in')
+
+    # plot pdf of F
+    axes3 = fig.add_subplot(2,2,4)
+    axes3.hist(test_outp_i, bins=np.arange(0,1.05,0.05),
+              density=True, histtype='step', label='Predicted')
+    axes3.hist(test_ske_i, bins=np.arange(0,1.05,0.05),
+              density=True, histtype='step', label='Real', alpha=0.5)
+    axes3.set_xlabel(r'$F$', fontsize=18)
+    axes3.set_ylabel(r'pdf', fontsize=18)
+    axes3.set_xlim([-0.05, 1.05])
+    axes3.tick_params(labelsize=12, direction='in')
     customs = [p1, p2, 
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5),
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5)]
-
-    axes[1].hist(test_outp_i, bins=np.arange(0,1.05,0.05),
-              density=True, histtype='step', label='Predicted')
-    axes[1].hist(test_ske_i, bins=np.arange(0,1.05,0.05),
-              density=True, histtype='step', label='Real', alpha=0.5)
-    axes[1].set_xlabel(r'normalized F', fontsize=18)
-    axes[1].set_ylabel(r'pdf', fontsize=18)
-    axes[1].set_xlim([-0.05, 1.05])
-    axes[1].legend(fontsize=18, bbox_to_anchor=(1.06,0.75))
-    axes[1].legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
-                        '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,0.75))
+    axes3.legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
+                        '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,1.5))
+    plt.subplots_adjust(wspace=0.18, hspace=0.23)
     plt.savefig(folder_outp / \
-        ('x%dy%d_1DPS&PDF.png'%(test_block_i[0], test_block_i[1])),
-        dpi=200, bbox_inches='tight')
-    plt.subplots_adjust(wspace=0.15, hspace=0)
-    plt.close()
-    
-    
-
-    # plotting skewers
-    fig, axes = plt.subplots(2, 1, figsize=(12, 8))
-    p1, = axes[0].plot(vaxis, -np.log(test_outp_i), label='Predicted' )
-    p2, = axes[0].plot(vaxis, -np.log(test_ske_i), label='Real', alpha=0.5)
-    axes[0].set_xlabel(r'v (km/s)', fontsize=18)
-    axes[0].set_ylabel(r'$\tau$', fontsize=18)
-    axes[0].set_ylim([0,3])
-    subaxs = axes[0].twinx()
-    p3, = subaxs.plot(vaxis, test_DM_i,
-                   label='DM', alpha=0.3, color='green' )
-    subaxs.set_ylim([0, 5])
-    subaxs.set_ylabel(r'DM Over Den+1', fontsize=18)
-    axes[0].legend([p1,p2,p3], [l.get_label() for l in [p1,p2,p3]],
-               fontsize=18, bbox_to_anchor=(1.30,0.75))
-
-    p1, = axes[1].plot(vaxis, test_outp_i, label='Predicted', alpha=0.7 )
-    p2, = axes[1].plot(vaxis, test_ske_i, label='Real', alpha=0.5 )
-    axes[1].set_xlabel(r'v (km/s)', fontsize=18)
-    axes[1].set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
-    axes[1].set_ylim([-0.1, 1.1])
-    axes[1].legend(fontsize=18, bbox_to_anchor=(1.30, 0.75))
-
-    axes[1].get_shared_x_axes().join(axes[1], axes[0])
-    plt.subplots_adjust(wspace=0, hspace=0.1)
-    plt.savefig(folder_outp / \
-        ('x%dy%d_skewer.png'%(test_block_i[0], test_block_i[1])),
+        ('x%dy%d.png'%(test_block_i[0], test_block_i[1])),
         dpi=200, bbox_inches='tight')
     plt.close()
     

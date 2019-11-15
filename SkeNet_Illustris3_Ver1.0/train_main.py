@@ -33,9 +33,9 @@ if ~(train_insize%2).all():
 
 # pre-process
 def pre_proc(tau, block):
-    '''log(tau)'''
+    '''1-exp(-tau)'''
     bln = np.ones(len(block), dtype='bool')
-    tau = np.log(tau)
+    tau = 1-np.exp(-1*tau)
     return (tau[bln],  block[bln])
 
 

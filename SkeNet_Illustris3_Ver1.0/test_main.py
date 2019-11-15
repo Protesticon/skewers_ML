@@ -14,15 +14,17 @@ from test import *
 
 # pre-process
 def pre_proc(tau, block):
-    '''1-exp(-tau)'''
+    '''log(tau)'''
     tau   = np.array(tau)
     block = np.array(block)
-    return (1-np.exp(-1*tau), block)
+    tau   = np.log(tau)
+    return (tau, block)
 
 def toF_proc(tau):
     '''transfer data derived from pre_proc to F=exp(-tau)'''
-    tau   = np.array(tau)
-    return (1-tau)
+    tau = np.array(tau)
+    tau = np.exp(-np.exp(tau))
+    return tau
 
 
 # Path and data file name
@@ -39,7 +41,7 @@ ske_name = 'spectra_Illustris3_N600.npy'
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 test_batch = 50
-localtime_n = ['2019-11-12 08:56:06', '2019-11-13 08:45:54', '2019-11-14 05:04:10']
+localtime_n = ['2019-11-15 04:39:02']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
 
