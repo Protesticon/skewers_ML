@@ -55,13 +55,14 @@ def test(test_ske, test_block, DM_general, DM_param,
 
 
 def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
-             vaxis, folder_outp):
+             v_end, folder_outp):
     
     # plotting 1dps and pdf of skewers
     # k axis
     bins = int(15)
-    len_ske = len(test_outp_i)
-    rvax_t = np.arange(int(len_ske/2))
+    ske_len = len(test_outp_i)
+    vaxis  = np.arange(0, v_end, v_end/ske_len)
+    rvax_t = np.arange(int(ske_len/2))
     logrv  = np.log10(rvax_t)
     logrv[0] = logrv[1]-10
     rvmin, rvmax = 0, logrv[-1]
@@ -74,17 +75,17 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
     # 1dps and pdf
     outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
     test4fft = (test_ske_i-test_ske_i.mean())/test_ske_i.std()
-    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(len_ske/2)]
-    fft_test = np.absolute(np.fft.fft(test4fft))[:int(len_ske/2)]
+    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
+    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
     onePS_outp = np.zeros(bins)
     onePS_test = np.zeros(bins)
     for ii in range(bins):
-        rvaxis[ii] = 10**logrv[bin_bl[ii]].mean()
+        rvaxis[ii] = 10**logrv[bin_bl[ii]].mean() 
         onePS_outp[ii]  = (rvax_t*fft_outp**2)[bin_bl[ii]].mean() * 2
         onePS_test[ii]  = (rvax_t*fft_test**2)[bin_bl[ii]].mean() * 2
-    rvaxis = rvaxis * 0.5/vaxis[1]/(len_ske/2)
-    onePS_outp = onePS_outp * 0.5/vaxis[1]/(len_ske/2)
-    onePS_test = onePS_test * 0.5/vaxis[1]/(len_ske/2)
+    rvaxis = rvaxis * 2 * np.pi / v_end
+    onePS_outp = onePS_outp / v_end
+    onePS_test = onePS_test / v_end
     
     accuracy_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).mean()
     rela_err_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).std()
@@ -102,9 +103,9 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5)]
 
-    axes[1].hist(test_outp_i, bins=np.arange(0,1,0.05),
+    axes[1].hist(test_outp_i, bins=np.arange(0,1.05,0.05),
               density=True, histtype='step', label='Predicted')
-    axes[1].hist(test_ske_i, bins=np.arange(0,1,0.05),
+    axes[1].hist(test_ske_i, bins=np.arange(0,1.05,0.05),
               density=True, histtype='step', label='Real', alpha=0.5)
     axes[1].set_xlabel(r'normalized F', fontsize=18)
     axes[1].set_ylabel(r'pdf', fontsize=18)
@@ -154,10 +155,11 @@ def test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
 
 
 def test_accuracy(test_block_i, test_outp_i, test_ske_i,
-                 vaxis, folder_outp):
+                 v_end, folder_outp):
     bins = int(15)
-    len_ske = len(test_outp_i)
-    rvax_t = np.arange(int(len_ske/2))
+    ske_len = len(test_outp_i)
+    vaxis  = np.arange(0, v_end, v_end/ske_len)
+    rvax_t = np.arange(int(ske_len/2))
     logrv  = np.log10(rvax_t)
     logrv[0] = logrv[1]-10
     rvmin, rvmax = 0, logrv[-1]
@@ -170,17 +172,17 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
     # 1DPS
     outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
     test4fft = (test_ske_i-test_ske_i.mean())/test_ske_i.std()
-    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(len_ske/2)]
-    fft_test = np.absolute(np.fft.fft(test4fft))[:int(len_ske/2)]
+    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
+    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
     onePS_outp = np.zeros(bins)
     onePS_test = np.zeros(bins)
     for ii in range(bins):
         rvaxis[ii] = 10**logrv[bin_bl[ii]].mean()
         onePS_outp[ii]  = (rvax_t*fft_outp**2)[bin_bl[ii]].mean() * 2
         onePS_test[ii]  = (rvax_t*fft_test**2)[bin_bl[ii]].mean() * 2
-    rvaxis = rvaxis * 0.5/vaxis[1]/(len_ske/2)
-    onePS_outp = onePS_outp * 0.5/vaxis[1]/(len_ske/2)
-    onePS_test = onePS_test * 0.5/vaxis[1]/(len_ske/2)
+    rvaxis = rvaxis * 2 * np.pi / v_end
+    onePS_outp = onePS_outp / v_end
+    onePS_test = onePS_test / v_end
     
     accuracy_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).mean()
     rela_err_i = (np.abs(onePS_outp[:-1]-onePS_test[:-1])/onePS_test[:-1]).std()

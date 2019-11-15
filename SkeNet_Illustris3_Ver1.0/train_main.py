@@ -24,7 +24,7 @@ val_len    = 200  # number of tau blocks
 test_len   = 200  # number of skewers
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
-batch_size = 50
+batch_size = 100
 learning_rate = 0.001
 num_epochs = 20
 localtime = time.localtime()
@@ -33,9 +33,9 @@ if ~(train_insize%2).all():
 
 # pre-process
 def pre_proc(tau, block):
-    '''1-exp(-tau)'''
+    '''log(tau)'''
     bln = np.ones(len(block), dtype='bool')
-    tau = 1 - np.exp(-1*tau)
+    tau = np.log(tau)
     return (tau[bln],  block[bln])
 
 
@@ -81,9 +81,9 @@ del id_seperate
 # load model
 model = get_residual_network().float().to(device)
 # loss and optimizer
-criterion = nn.SmoothL1Loss()
+criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=2)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=2)
 
 
 # Train the model
@@ -135,6 +135,9 @@ for epoch in range(num_epochs):
         lowest_time   = val_time
         torch.save(model.state_dict(),
              "params/params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
+    
+    # reducing learning rate if val_losses do not reduce
+    scheduler.step(val_losses)
     
     with open('history.txt', 'a') as f:
         f.writelines('\n\tValidation loss: %s,  '%str(val_losses)\

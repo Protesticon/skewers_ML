@@ -39,14 +39,14 @@ ske_name = 'spectra_Illustris3_N600.npy'
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 test_batch = 50
-localtime_n = ['2019-11-13 08:45:54']
+localtime_n = ['2019-11-12 08:56:06', '2019-11-13 08:45:54', '2019-11-14 05:04:10']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
 
     
     
     # device used to train the model
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print('Using device:', device)
 
 
@@ -139,7 +139,6 @@ for localtime_i in localtime_n:
     
     from scipy import constants as C
     v_end  = 0.02514741843009228 * C.speed_of_light / 1e3
-    vaxis  = np.arange(0, v_end, v_end/ske_len)
     
     nrange = min(len(test_ske), 50)
     test_sp = np.arange(len(test_ske))
@@ -150,6 +149,8 @@ for localtime_i in localtime_n:
     
     accuracy = AverageMeter()
     rela_err = AverageMeter()
+    accu_arr = np.zeros(len(test_ske))
+    erro_arr = np.zeros(len(test_ske))
     
 
     # loop
@@ -163,9 +164,11 @@ for localtime_i in localtime_n:
         test_DM_i = DM_general[0, test_block_i[0], test_block_i[1], :].numpy()
 
         accuracy_i, rela_err_i = test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
-                                         vaxis, folder_outp)
+                                         v_end, folder_outp)
         accuracy.update(accuracy_i, 1)
         rela_err.update(rela_err_i, 1)
+        accu_arr[ii] = accuracy_i
+        erro_arr[ii] = rela_err_i
     
     print('Measuring accuracy of left skewers...')
     for i, ii in enumerate(test_sp2):
@@ -176,9 +179,32 @@ for localtime_i in localtime_n:
         test_DM_i = DM_general[0, test_block_i[0], test_block_i[1], :].numpy()
         
         accuracy_i, rela_err_i = test_accuracy(test_block_i, test_outp_i, test_ske_i,
-                                         vaxis, folder_outp)
+                                         v_end, folder_outp)
         accuracy.update(accuracy_i, 1)
         rela_err.update(rela_err_i, 1)
+        accu_arr[ii] = accuracy_i
+        erro_arr[ii] = rela_err_i
+        
+        
+    fig, axes = plt.subplots(2,1,figsize=(12,8))
+    axes[0].scatter(np.arange(len(test_ske)), accu_arr, alpha=0.5, color='grey')
+    p1 = axes[0].hlines(y=accu_arr.mean(), xmin=0, xmax=len(test_ske), linestyle='--')
+    axes[0].set_xticks([])
+    axes[0].set_ylim([-0.1, 1.6])
+    axes[0].set_ylabel('accuracy $m$', fontsize=18)
+    customs = [p1]
+    axes[0].legend(customs, ['average $m=%.4f$'%accu_arr.mean()], fontsize=14, loc=1)
+
+    axes[1].scatter(np.arange(len(test_ske)), erro_arr, alpha=0.5, color='grey')
+    p2 = axes[1].hlines(y=erro_arr.mean(), xmin=0, xmax=len(test_ske), linestyle='--')
+    axes[1].set_xticks([])
+    axes[1].set_ylim([-0.1, 1.6])
+    axes[1].set_ylabel('error $s$', fontsize=18)
+    customs = [p2]
+    axes[1].legend(customs, ['average $s=%.4f$'%erro_arr.mean()], fontsize=14, loc=1)
+
+    plt.savefig(folder_outp / ('average.png'), dpi=300, bbox_inches='tight') 
+    plt.close()
 
     
     # record this test
