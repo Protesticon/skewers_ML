@@ -29,7 +29,7 @@ learning_rate = 0.001
 num_epochs = 20
 localtime = time.localtime()
 if ~(train_insize%2).all():
-    raise ValueError('train size scannot be even.')
+    raise ValueError('train size cannot be even.')
 
 # pre-process
 def pre_proc(tau, block):
