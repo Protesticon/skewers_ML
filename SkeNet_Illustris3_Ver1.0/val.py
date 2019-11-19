@@ -38,8 +38,9 @@ def validate(val_ske, val_block, DM_general, DM_param,
 
 
             if (i+1) % 100 == 0:
-                print ("Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
-                    .format(i+1, val_ske.shape[0], loss.item(), time.time()-start_time))
+                print ("Step [{:{}d}/{}] Loss: {:.4f}, Time: {:.4f}"
+                    .format(i+1, int(np.log10(val_ske.shape[0])+1),
+                            val_ske.shape[0], loss.item(), time.time()-start_time))
 
     return losses.avg
 

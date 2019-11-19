@@ -798,13 +798,41 @@ Epoch 20/20:
 
 Test History Record:
 	Test of the training at 2019-11-16 07:53:18
-	Test loss: 0.004538022313984887,  2019-11-17, 08:37:48
-	Average accuracy: 0.566654507852838,  2019-11-17, 08:37:48
-	Average relative error: 1.2243616593143538,  2019-11-17, 08:37:48
+	Test loss: 0.00907604462748471,  2019-11-19, 07:12:38
+	Average accuracy: 0.5897293173773415,  2019-11-19, 07:12:38
+	Average relative error: 1.2451842505819017,  2019-11-19, 07:12:38
 
 
 Test History Record:
 	Test of the training at 2019-11-15 04:39:02
-	Test loss: 0.472301744731764,  2019-11-19, 06:26:13
-	Average accuracy: 0.5336250246552066,  2019-11-19, 06:26:13
-	Average relative error: 1.03143336137673,  2019-11-19, 06:26:13
+	Test loss: 0.472301744731764,  2019-11-19, 08:14:08
+	Average accuracy: 0.5336250246552066,  2019-11-19, 08:14:08
+	Average relative error: 1.03143336137673,  2019-11-19, 08:14:08
+
+
+Test History Record:
+	Test of the training at 2019-11-15 04:39:02
+	Test loss: 0.472301744731764,  2019-11-19, 10:12:58
+	Average accuracy: 0.5336250246552066,  2019-11-19, 10:12:58
+	Average relative error: 1.03143336137673,  2019-11-19, 10:12:58
+
+
+Test History Record:
+	Test of the training at 2019-11-15 04:39:02
+	Test loss: 0.472301744731764,  2019-11-19, 10:32:37
+	Average accuracy: 0.5336250246552066,  2019-11-19, 10:32:37
+	Average relative error: 1.03143336137673,  2019-11-19, 10:32:37
+
+
+Test History Record:
+	Test of the training at 2019-11-15 04:39:02
+	Test loss: 0.48115166947245597,  2019-11-20, 04:41:58
+	Average accuracy: 0.5245811035417075,  2019-11-20, 04:41:58
+	Average relative error: 0.9756606690512335,  2019-11-20, 04:41:58
+
+
+Test History Record:
+	Test of the training at 2019-11-15 04:39:02
+	Test loss: 0.4854319653473794,  2019-11-20, 04:48:10
+	Average accuracy: 0.8354248745802042,  2019-11-20, 04:48:10
+	Average relative error: 2.1407989587944356,  2019-11-20, 04:48:10

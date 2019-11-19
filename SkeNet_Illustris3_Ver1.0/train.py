@@ -43,9 +43,10 @@ def train(train_ske, train_block, DM_general, DM_param,
         optimizer.step()
         
         if (i+1) % 100 == 0:
-            print ("Epoch [{}/{}], Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
-                   .format(epoch+1, num_epochs, i+1,
-                           train_ske.shape[0], loss.item(), time.time()-start_time))
+            print ("Epoch [{:{}d}/{}], Step [{:{}d}/{}] Loss: {:.4f}, Time: {:.4f}"
+                   .format(epoch+1, int(np.log10(num_epochs)+1), num_epochs, i+1,
+                           int(np.log10(train_ske.shape[0])+1), train_ske.shape[0],
+                           loss.item(), time.time()-start_time))
         if (i+1) % 10000 == 0: 
             print ("SAVING MODEL!")
             torch.save(model.state_dict(),
