@@ -97,21 +97,3 @@ Test History Record:
 	Test loss: 1.0026101214811205,  2019-11-19, 07:23:56
 	Average accuracy: 0.7926767206637203,  2019-11-19, 07:23:56
 	Average relative error: 1.284353060394134,  2019-11-19, 07:23:56
-
-
-Training History Record,
-Time: 2019-11-19 06:28:44
-Train Frac: 90000000/216000000
-Real Train Frac: 90000000/216000000
-Val Frac: 3000000/216000000
-Real Val Frac: 3000000/216000000
-Input Size: [15 15 71]
-Output Size: [5 5 5]
-Training Field: log(tau)
-Loss: MSELoss
-Optimizer: Adam
-Learning Rate: 0.002
-Epoch 1/20:
-	Training loss : 1.5108736250922083,  2019-11-19, 07:29:32
-	Validation loss: 1.300463102509578,  2019-11-19, 07:30:57
-	Lowest val loss: 1.300463102509578,  2019-11-19, 07:30:57

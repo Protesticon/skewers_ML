@@ -14,7 +14,7 @@ from model import *
 
 
 def test(test_ske, test_block, DM_general, DM_param,
-        test_batch, train_size, model, criterion,
+        test_batch, train_size, model, mdn_loss,
          device, start_time):
 
     losses = AverageMeter()
@@ -22,7 +22,7 @@ def test(test_ske, test_block, DM_general, DM_param,
     # switch to eval mode
     model.eval()
     
-    test_outp = np.zeros(test_ske.shape)
+    test_outp = np.zeros(test_ske.shape[0], test_ske.shape[1])
 
     with torch.no_grad():
         for i, test_data in enumerate(test_ske, 0):
@@ -37,18 +37,18 @@ def test(test_ske, test_block, DM_general, DM_param,
             
             
             # compute output and mearsure/record loss
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
+            pi, sigma, mu = model(inputs)
+            loss = mdn_loss(pi, sigma, mu, targets)
             losses.update(loss.item(), test_batch)
+            test_outp = sample(pi, sigma, mu).squeeze()
             
             # record outputs
             test_outp[i] = outputs.detach().cpu().numpy()
 
             if (i+1) % 100 == 0:
-                print("Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
-                    .format(i+1, test_ske.shape[0], loss.item(), time.time()-start_time))
-    
-    test_outp = test_outp.reshape(-1, test_ske.shape[-3], test_ske.shape[-2], test_ske.shape[-1])
+                print("Step [{:{}d}/{}] Loss: {:.4f}, Time: {:.4f}"
+                    .format(i+1, int(np.log10(test_ske.shape[0])+1),
+                            test_ske.shape[0], loss.item(), time.time()-start_time))
 
     return test_outp, losses.avg
 

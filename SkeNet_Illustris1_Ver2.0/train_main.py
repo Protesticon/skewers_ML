@@ -22,11 +22,12 @@ ske_name = 'spectra_Illustris1_N600_zaxis.npy'
 train_len  = 6000 # number of tau blocks
 val_len    = 200  # number of tau blocks
 test_len   = 200  # number of skewers
-train_insize = np.array([15, 15, 71]) # x, y, z respctively
+train_insize = np.array([15, 15, 73]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 batch_size = 50
-learning_rate = 0.002
+learning_rate = 0.001
 num_epochs = 20
+num_gaussians = 4
 localtime = time.localtime()
 if ~(train_insize%2).all():
     raise ValueError('train size cannot be even.')
@@ -41,8 +42,8 @@ def pre_proc(tau, block):
 
 
 # device used to train the model
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-print('Using device:', device)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print('Using device:', torch.cuda.get_device_name(device=device.index))
 
 
 
@@ -71,17 +72,23 @@ ske_len = int(ske.shape[-1])
 print('Setting training and validation set...')
 id_seperate = divide_data(ske, train_ousize, train_len, val_len, test_len, localtime)
 
-train_ske, train_block = load_train(ske, block, id_seperate, train_ousize, batch_size, pre_proc)
+train_ske, train_block = load_train(ske, block, id_seperate, train_ousize,
+                                    batch_size, num_gaussians, pre_proc)
 
-val_ske, val_block = load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc)
+val_ske, val_block = load_val(ske, block, id_seperate, train_ousize,
+                              batch_size, num_gaussians, pre_proc)
 
 del id_seperate
 
 
+print('Loading model, loss, optimizer etc...')
 # load model
-model = get_residual_network().float().to(device)
+# plz do not change the 8
+model = nn.Sequential(
+    SkeNet(ResidualBlock,layers=layers),
+    MDN(8, 1, num_gaussians)
+    ).float().to(device)
 # loss and optimizer
-criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=2)
 
@@ -105,7 +112,7 @@ with open('history.txt', 'a') as f:
     f.writelines('\nInput Size: %s'%str(train_insize))
     f.writelines('\nOutput Size: %s'%str(train_ousize))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
-    f.writelines('\nLoss: %s'%criterion.__class__.__name__)
+    f.writelines('\nLoss: Mixture Gaussian likelihood')
     f.writelines('\nOptimizer: %s'%optimizer.__class__.__name__)
     f.writelines('\nLearning Rate: %s'%str(learning_rate))
 f.close()
@@ -114,16 +121,17 @@ for epoch in range(num_epochs):
     # train for one epoch
     print("Begin Training Epoch {}".format(epoch+1))
     train_losses = train(train_ske, train_block, DM_general, DM_param,
-                    batch_size, train_insize, model, criterion, optimizer,
-                    num_epochs, epoch, device, start_time, localtime)
+                    batch_size, train_insize, model, mdn_loss, optimizer,
+                         num_epochs, epoch, device, start_time, localtime)
     with open('history.txt', 'a') as f:
-        f.writelines('\nEpoch {}/{}:'.format(epoch+1, num_epochs))
+        f.writelines('\nEpoch {:{}d}/{}:'.format(epoch+1,
+                                                 int(np.log10(num_epochs)+1), num_epochs))
         f.writelines('\n\tTraining loss : %s,  '%str(train_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
     f.close()
 
     # evaluate on validation set
-    print("Begin Validation @ Epoch {}".format(epoch+1))
+    print("Begin Validation Epoch {}".format(epoch+1))
     val_losses = validate(val_ske, val_block, DM_general, DM_param,
                 batch_size, train_insize, model, criterion, device, start_time)
     val_time   = time.localtime()

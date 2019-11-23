@@ -70,12 +70,12 @@ def load_DM(Path, FileName):
     # define a typical velocity
     # direct average does not make sense in low-reso simulations
     # cuz there are lots of empty cells
-    v_mean = np.linalg.norm(([DM_vx, DM_vy, DM_vz]), axis=0).mean()
-    # v_T = 230 # ~ average velocity
+    # v_mean = np.linalg.norm(([DM_vx, DM_vy, DM_vz]), axis=0).mean()
+    v_T = 225 # ~ average velocity
 
     # put 4 fields into 1 numpy array
-    DM_general = np.array([DM, DM_vx/v_mean, DM_vy/v_mean, DM_vz/v_mean])
-    del DM, DM_vx, DM_vy, DM_vz, v_mean
+    DM_general = np.array([DM, DM_vx/v_T, DM_vy/v_T, DM_vz/v_T])
+    del DM, DM_vx, DM_vy, DM_vz
     
     return DM_general
 
@@ -128,7 +128,8 @@ def divide_data(ske, train_ousize, train_len, val_len, test_len, localtime):
 
 
 
-def load_train(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
+def load_train(ske, block, id_seperate, train_ousize,
+               batch_size, num_gaussians, pre_proc):
     '''
     To load, shuffle and chunk the training set.
     '''
@@ -137,7 +138,7 @@ def load_train(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     nz = int(ske.shape[-1] / train_ousize[2])
     train_block = train_block.reshape(-1, 3)
     train_ske   = train_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2] )\
-            .transpose(0, 3, 1, 2, 4).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
+            .transpose(0,3,1,2,4).reshape(-1, train_ousize.prod(), 1).repeat(num_gaussians, axis=-1)
 
     np.random.seed(np.random.randint(0,50))
     state = np.random.get_state()
@@ -156,7 +157,8 @@ def load_train(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
 
 
 
-def load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
+def load_val(ske, block, id_seperate, train_ousize,
+             batch_size, num_gaussians, pre_proc):
     '''
     To load, shuffle and chunk the validation set.
     '''
@@ -166,7 +168,7 @@ def load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     nz = int(ske.shape[-1] / train_ousize[2])
     val_block = val_block.reshape(-1, 3)
     val_ske   = val_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2] )\
-            .transpose(0, 3, 1, 2, 4).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
+            .transpose(0,3,1,2,4).reshape(-1, train_ousize.prod(), 1).repeat(num_gaussians, axis=-1)
 
     np.random.seed(np.random.randint(0,51))
     state = np.random.get_state()
@@ -185,7 +187,8 @@ def load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
 
 
 
-def load_test(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
+def load_test(ske, block, id_seperate, train_ousize,
+              batch_size, num_gaussians, pre_proc):
     '''
     To load and shuffle the test set.
     '''
@@ -195,7 +198,7 @@ def load_test(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     nz = int(ske.shape[-1] / train_ousize[2])
     test_block = test_block.reshape(-1, 3)
     test_ske   = test_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2] )\
-            .transpose(0, 3, 1, 2, 4).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
+            .transpose(0,3,1,2,4).reshape(-1, train_ousize.prod(), 1).repeat(num_gaussians, axis=-1)
 
     test_ske, test_block = pre_proc(test_ske, test_block)
     test_len1  = len(test_ske) - len(test_ske)%batch_size

@@ -20,26 +20,27 @@ def validate(val_ske, val_block, DM_general, DM_param,
 
     with torch.no_grad():
         for i, val_data in enumerate(val_ske, 0):
-
+            
             # get the targets;
-            targets = val_data.to(device)
-            # x,y,z are the central coordinates of each training DM cube
-            x, y, z = val_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
+            targets = train_data.to(device)
+            # x,y,z are the central coordinates of each input DM cuboid
+            x, y, z = train_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
             # make coordinate index, retrieve input dark matter
-            batch_grids = make_batch_grids(x, y, z, batch_size, train_insize, DM_param)
+            batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_param)
             inputs = DM_general[batch_grids].to(device)
 
-            # compute output
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
+            # forward + backward + optimize
+            pi, sigma, mu = model(inputs)
+            loss = mdn_loss(pi, sigma, mu, targets)
 
-            # measure accuracy and record loss
+            # record loss
             losses.update(loss.item(), batch_size)
 
 
             if (i+1) % 100 == 0:
-                print ("Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
-                    .format(i+1, val_ske.shape[0], loss.item(), time.time()-start_time))
+                print ("Step [{:{}d}/{}] Loss: {:.4f}, Time: {:.4f}"
+                    .format(i+1, int(np.log10(val_ske.shape[0])+1), val_ske.shape[0],
+                            loss.item(), time.time()-start_time))
 
     return losses.avg
 
