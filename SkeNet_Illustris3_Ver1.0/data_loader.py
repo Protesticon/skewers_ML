@@ -67,11 +67,12 @@ def load_DM(Path, FileName):
     DM_vz_fits.close(); del DM_vz_fits
 
     # normalize the velocity field
-    v_mean = np.linalg.norm(([DM_vx, DM_vy, DM_vz]), axis=0).mean()
+    # v_mean = np.linalg.norm(([DM_vx, DM_vy, DM_vz]), axis=0).mean()
+    v_T = 225
 
     # put 4 fields into 1 numpy array
-    DM_general = np.array([DM, DM_vx/v_mean, DM_vy/v_mean, DM_vz/v_mean])
-    del DM, DM_vx, DM_vy, DM_vz, v_mean
+    DM_general = np.array([DM, DM_vx/v_T, DM_vy/v_T, DM_vz/v_T])
+    del DM, DM_vx, DM_vy, DM_vz, v_T
     
     return DM_general
 

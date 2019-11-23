@@ -11,7 +11,7 @@ Validation process. For missed parameters plz check the main.py.
 
 
 def validate(val_ske, val_block, DM_general, DM_param,
-        batch_size, train_insize, model, criterion, device, start_time):
+        batch_size, train_insize, model, mdn_loss, device, start_time):
 
     losses = AverageMeter()
 
@@ -22,11 +22,11 @@ def validate(val_ske, val_block, DM_general, DM_param,
         for i, val_data in enumerate(val_ske, 0):
             
             # get the targets;
-            targets = train_data.to(device)
+            targets = val_data.to(device)
             # x,y,z are the central coordinates of each input DM cuboid
-            x, y, z = train_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
+            x, y, z = val_block[(i*batch_size+np.arange(batch_size)).astype('int')].transpose()
             # make coordinate index, retrieve input dark matter
-            batch_grids = make_batch_grids(x, y, z, batch_size, train_size, DM_param)
+            batch_grids = make_batch_grids(x, y, z, batch_size, train_insize, DM_param)
             inputs = DM_general[batch_grids].to(device)
 
             # forward + backward + optimize

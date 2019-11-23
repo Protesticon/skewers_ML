@@ -31,7 +31,7 @@ DM_name = ['DMdelta_Illustris3_L75_N600_v2.fits',
             'vx_cic_Illustris3_L75_N600_v2.fits',
             'vy_cic_Illustris3_L75_N600_v2.fits',
             'vz_cic_Illustris3_L75_N600_v2.fits']
-ske_name = 'spectra_Illustris3_N600_xaxis.npy'
+ske_name = 'spectra_Illustris3_N600_zaxis.npy'
 
 
 
@@ -39,23 +39,21 @@ ske_name = 'spectra_Illustris3_N600_xaxis.npy'
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 test_batch = 50
-localtime_n = ['2019-11-15 04:39:02']
+localtime_n = ['2019-11-23 03:41:42']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
 
     
-    
     # device used to train the model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print('Using device:', device)
-
+    print('Using device:', torch.cuda.get_device_name(device=device.index))
 
 
     # load dark matter data
     print('Loading dark matter...')
     DM_general = load_DM(folder, DM_name)
-    DM_general = DM_general.transpose(0,2,3,1)
-    DM_general = DM_general[[0,2,3,1]]
+    DM_general = DM_general.transpose(0,1,2,3)
+    DM_general = DM_general[[0,1,2,3]]
     # basic paramters
     DM_param.pix  = len(DM_general[0])
     DM_param.len  = 75 # in Mpc/h
@@ -99,7 +97,7 @@ for localtime_i in localtime_n:
 
 
     # loss
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
 
 
     # record starr time
@@ -135,7 +133,7 @@ for localtime_i in localtime_n:
 
     print('Plotting example skewers...')
     # generate comparison images
-    folder_outp = Path.cwd()/'test_figs'/('%s_x'\
+    folder_outp = Path.cwd()/'test_figs'/('%s_z_failures'\
             %time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
     if not os.path.exists(folder_outp):
         os.makedirs(folder_outp)
@@ -229,8 +227,7 @@ for localtime_i in localtime_n:
     axes[0,1].set_ylim(axes[0,1].get_ylim())
     p2 = axes[0,1].vlines(x=erro_arr.mean(), ymin=0, ymax=9999, linestyle='--')
     axes[0,1].set_xlabel('error $s$', fontsize=14)
-    axes[0,1].set_ylabel('pdf of $s$', fontsize=14)
-    axes[0,1].set_title('pdf of $m$', fontsize=14)
+    axes[0,1].set_title('pdf of $s$', fontsize=14)
     axes[0,1].tick_params(labelsize=12, direction='in')
     customs = [p2, 
               Line2D([0], [0], marker='o', color='w',

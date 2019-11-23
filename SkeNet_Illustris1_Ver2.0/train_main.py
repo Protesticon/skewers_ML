@@ -133,7 +133,7 @@ for epoch in range(num_epochs):
     # evaluate on validation set
     print("Begin Validation Epoch {}".format(epoch+1))
     val_losses = validate(val_ske, val_block, DM_general, DM_param,
-                batch_size, train_insize, model, criterion, device, start_time)
+                batch_size, train_insize, model, mdn_loss, device, start_time)
     val_time   = time.localtime()
 
     # remember best prec@1 and save checkpoint if desired

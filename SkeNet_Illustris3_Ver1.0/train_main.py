@@ -14,7 +14,7 @@ DM_name = ['DMdelta_Illustris3_L75_N600_v2.fits',
             'vx_cic_Illustris3_L75_N600_v2.fits',
             'vy_cic_Illustris3_L75_N600_v2.fits',
             'vz_cic_Illustris3_L75_N600_v2.fits']
-ske_name = 'spectra_Illustris3_N600.npy'
+ske_name = 'spectra_Illustris3_N600_zaxis.npy'
 
 
 
@@ -24,7 +24,7 @@ val_len    = 200  # number of tau blocks
 test_len   = 200  # number of skewers
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
-batch_size = 100
+batch_size = 50
 learning_rate = 0.001
 num_epochs = 20
 localtime = time.localtime()
@@ -33,16 +33,16 @@ if ~(train_insize%2).all():
 
 # pre-process
 def pre_proc(tau, block):
-    '''1-exp(-tau)'''
+    '''log(tau)'''
     bln = np.ones(len(block), dtype='bool')
-    tau = 1-np.exp(-1*tau)
+    tau = np.log(tau)
     return (tau[bln],  block[bln])
 
 
 
 # device used to train the model
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-print('Using device:', device)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print('Using device:', torch.cuda.get_device_name(device=device.index))
 
 
 
@@ -81,7 +81,7 @@ del id_seperate
 # load model
 model = get_residual_network().float().to(device)
 # loss and optimizer
-criterion = nn.MSELoss()
+criterion = nn.L1Loss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=2)
 
@@ -117,7 +117,8 @@ for epoch in range(num_epochs):
                     batch_size, train_insize, model, criterion, optimizer,
                     num_epochs, epoch, device, start_time, localtime)
     with open('history.txt', 'a') as f:
-        f.writelines('\nEpoch {}/{}:'.format(epoch+1, num_epochs))
+        f.writelines('\nEpoch {:{}d}/{}:'.format(epoch+1,
+                                                 int(np.log10(num_epochs)+1), num_epochs))
         f.writelines('\n\tTraining loss : %s,  '%str(train_losses)\
             +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
     f.close()
