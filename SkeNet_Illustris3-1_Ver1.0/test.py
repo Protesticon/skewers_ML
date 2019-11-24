@@ -129,7 +129,7 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
                         '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,1.5))
     plt.subplots_adjust(wspace=0.18, hspace=0.23)
     plt.savefig(folder_outp / \
-        ('y%03dz%03d.png'%(test_block_i[0], test_block_i[1])),
+        ('x%03dy%03d.png'%(test_block_i[0], test_block_i[1])),
         dpi=200, bbox_inches='tight')
     plt.close()
     

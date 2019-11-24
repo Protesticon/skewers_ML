@@ -40,7 +40,7 @@ ske_name = 'spectra_Illustris1_N600_zaxis.npy'
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 test_batch = 50
-localtime_n = ['2019-11-15 04:39:02']
+localtime_n = ['2019-11-23 08:27:36']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
 
@@ -100,7 +100,7 @@ for localtime_i in localtime_n:
 
 
     # loss
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
 
 
     # record starr time
@@ -136,7 +136,7 @@ for localtime_i in localtime_n:
 
     print('Plotting example skewers...')
     # generate comparison images
-    folder_outp = Path.cwd()/'test_figs'/('%s_x'\
+    folder_outp = Path.cwd()/'test_figs'/('%s_z'\
             %time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
     if not os.path.exists(folder_outp):
         os.makedirs(folder_outp)
