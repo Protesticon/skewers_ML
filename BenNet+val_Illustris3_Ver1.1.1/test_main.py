@@ -33,14 +33,14 @@ DM_name = ['DMdelta_Illustris3_L75_N600_v2.fits',
             'vx_cic_Illustris3_L75_N600.fits',
             'vy_cic_Illustris3_L75_N600.fits',
             'vz_cic_Illustris3_L75_N600.fits']
-ske_name = 'spectra_Illustris3_N600.npy'
+ske_name = 'spectra_Illustris3_N600_zaxis.npy'
 
 
 
 # hyper parameters
 train_size = np.array([9, 9, 67]) # x, y, z respctively
 test_batch = 50
-localtime_n = ['2019-11-03 03:45:29', '2019-11-04 14:30:32']
+localtime_n = ['2019-11-04 14:30:32']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
     if ~(train_size%2).all():
@@ -124,13 +124,15 @@ for localtime_i in localtime_n:
     
     print('Plotting example skewers...')
     # generate comparison images
-    folder_outp = Path.cwd()/'test_figs'/('%s'\
+    folder_outp = Path.cwd()/'test_figs'/('%s_z'\
             %time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
     if not os.path.exists(folder_outp):
         os.makedirs(folder_outp)
-
+    
+    
     from scipy import constants as C
     v_end  = 0.02514741843009228 * C.speed_of_light / 1e3
+    F_mean = np.array([test_ske.mean(), test_outp.mean()])
     
     nrange = min(len(test_ske), 50)
     test_sp = np.arange(len(test_ske))
@@ -139,63 +141,125 @@ for localtime_i in localtime_n:
     test_sp1 = test_sp[:int(nrange)].astype('int')
     test_sp2 = test_sp[int(nrange):].astype('int')
     
+    bins = int(15)
     accuracy = AverageMeter()
     rela_err = AverageMeter()
     accu_arr = np.zeros(len(test_ske))
     erro_arr = np.zeros(len(test_ske))
+    oneDPS   = np.zeros(shape=(3, len(test_ske), bins))
     
-    #loop
+
+    # loop
     for i, ii in enumerate(test_sp1):
-        print('Plotting {}/{}, x{}y{}.png...'\
-              .format((i+1), nrange, test_block[ii,0,0], test_block[ii,0,1]))
-        
-        test_block_i = test_block[ii, 0]
+        print('Plotting {:{}d}/{}, x{:03d}y{:03d}.png...'\
+                .format((i+1), int(np.log10(nrange)+1), nrange,
+                        test_block[ii,0,0], test_block[ii,0,1]))
+
+        test_block_i = test_block[ii]
         test_outp_i = test_outp[ii]
         test_ske_i = test_ske[ii]
-        test_DM_i = DM_general[0, test_block[ii,0,0], test_block[ii,0,1], :].numpy()
-        
-        accuracy_i, rela_err_i = test_plot(test_block_i, test_outp_i, test_ske_i, test_DM_i,
-                                           v_end, folder_outp)
-        
+        test_DM_i = DM_general[0, test_block_i[0], test_block_i[1], :].numpy()
+
+        stat_i = test_plot(test_block_i, test_outp_i, test_ske_i,
+                          test_DM_i, F_mean, v_end, folder_outp, bins)
+        accuracy_i, rela_err_i = stat_i[[3,4]]
         accuracy.update(accuracy_i, 1)
         rela_err.update(rela_err_i, 1)
         accu_arr[ii] = accuracy_i
         erro_arr[ii] = rela_err_i
-        
-        
-    print('Measuring accuracy of left skewers...')
+        oneDPS[:,ii] = stat_i[0], stat_i[1], stat_i[2]
+    
+    print('Measuring accuracy of the left skewers...')
     for i, ii in enumerate(test_sp2):
         
-        test_block_i = test_block[ii, 0]
+        test_block_i = test_block[ii]
         test_outp_i = test_outp[ii]
         test_ske_i = test_ske[ii]
-        test_DM_i = DM_general[0, test_block[ii,0,0], test_block[ii,0,1], :].numpy()
+        test_DM_i = DM_general[0, test_block_i[0], test_block_i[1], :].numpy()
         
-        accuracy_i, rela_err_i = test_accuracy(test_block_i, test_outp_i,
-                                               test_ske_i, v_end, folder_outp)
+        stat_i = test_accuracy(test_block_i, test_outp_i, test_ske_i,
+                              F_mean, v_end, folder_outp, bins)
+        accuracy_i, rela_err_i = stat_i[[3,4]]
         accuracy.update(accuracy_i, 1)
         rela_err.update(rela_err_i, 1)
         accu_arr[ii] = accuracy_i
         erro_arr[ii] = rela_err_i
-        
-    fig, axes = plt.subplots(2,1,figsize=(12,8))
-    axes[0].scatter(np.arange(len(test_ske)), accu_arr, alpha=0.5, color='grey')
-    p1 = axes[0].hlines(y=accu_arr.mean(), xmin=0, xmax=len(test_ske), linestyle='--')
-    axes[0].set_xticks([])
-    axes[0].set_ylim([-0.1, 1.6])
-    axes[0].set_ylabel('accuracy $m$', fontsize=18)
-    customs = [p1]
-    axes[0].legend(customs, ['average $m=%.4f$'%accu_arr.mean()], fontsize=14, loc=1)
+        oneDPS[:,ii] = stat_i[0], stat_i[1], stat_i[2]
+    
+    print('Plotting average 1DPS and histogram...')
+    oneDPS_t = oneDPS
+    oneDPS = oneDPS.mean(axis=1)
+    accuracy_gen = np.abs((oneDPS[1]-oneDPS[2])/oneDPS[2])[oneDPS[0]<0.1].mean()
+    rela_err_gen = np.abs((oneDPS[1]-oneDPS[2])/oneDPS[2])[oneDPS[0]<0.1].std()
+    
+    outp_hist, F_hist = np.histogram(test_outp, bins=np.arange(0,1.05,0.05))
+    outp_hist = np.append(outp_hist, outp_hist[-1]) / len(test_ske)
+    test_hist, F_hist = np.histogram(test_ske, bins=np.arange(0,1.05,0.05))
+    test_hist = np.append(test_hist, test_hist[-1]) / len(test_ske)
+    accuracy_hist = np.abs((outp_hist[:-1]-test_hist[:-1])/test_hist[:-1]).mean()
+    rela_err_hist = np.abs((outp_hist[:-1]-test_hist[:-1])/test_hist[:-1]).std()
+    
+    
+    fig, axes = plt.subplots(2,2,figsize=(15,11))
 
-    axes[1].scatter(np.arange(len(test_ske)), erro_arr, alpha=0.5, color='grey')
-    p2 = axes[1].hlines(y=erro_arr.mean(), xmin=0, xmax=len(test_ske), linestyle='--')
-    axes[1].set_xticks([])
-    axes[1].set_ylim([-0.1, 1.6])
-    axes[1].set_ylabel('error $s$', fontsize=18)
-    customs = [p2]
-    axes[1].legend(customs, ['average $s=%.4f$'%erro_arr.mean()], fontsize=14, loc=1)
+    p0=axes[0,0].hist(accu_arr, color='grey', bins=np.arange(0, 1.7, 0.1))
+    axes[0,0].set_ylim(axes[0,0].get_ylim())
+    p1 = axes[0,0].vlines(x=accu_arr.mean(), ymin=0, ymax=9999, linestyle='--')
+    axes[0,0].set_xlabel('accuracy $m$', fontsize=14)
+    axes[0,0].set_title('pdf of $m$', fontsize=14)
+    axes[0,0].tick_params(labelsize=12, direction='in')
+    customs = [p1, 
+              Line2D([0], [0], marker='o', color='w',
+                      markerfacecolor='k', markersize=5)]
+    axes[0,0].legend(customs, ['average $m=%.4f$'%accu_arr.mean(),
+                            '$N=%d$'%len(accu_arr)], fontsize=12, loc=1)
 
-    plt.savefig(folder_outp / ('average.png'), dpi=300, bbox_inches='tight') 
+    axes[0,1].hist(erro_arr, color='grey', bins=np.arange(0, 1.7, 0.1))
+    axes[0,1].set_ylim(axes[0,1].get_ylim())
+    p2 = axes[0,1].vlines(x=erro_arr.mean(), ymin=0, ymax=9999, linestyle='--')
+    axes[0,1].set_xlabel('error $s$', fontsize=14)
+    axes[0,1].set_title('pdf of $s$', fontsize=14)
+    axes[0,1].tick_params(labelsize=12, direction='in')
+    customs = [p2, 
+              Line2D([0], [0], marker='o', color='w',
+                      markerfacecolor='k', markersize=5)]
+    axes[0,1].legend(customs, ['average $s=%.4f$'%erro_arr.mean(),
+                            '$N=%d$'%len(erro_arr)], fontsize=12, loc=1)
+
+    p3, = axes[1,0].plot(oneDPS[0], oneDPS[1], label='Predicted')
+    p4, = axes[1,0].plot(oneDPS[0], oneDPS[2], label='Real', alpha=0.5)
+    axes[1,0].set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=14)
+    axes[1,0].set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=14)
+    axes[1,0].set_xscale('log')
+    axes[1,0].set_yscale('log')
+    axes[1,0].set_ylim(axes[1,0].get_ylim())
+    axes[1,0].vlines(x=0.1, ymin=1e-8, ymax=1e8)
+    axes[1,0].set_title('Average 1DPS', fontsize=14)
+    axes[1,0].tick_params(labelsize=12, direction='in', which='both')
+    customs = [p3, p4, 
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5),
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5)]
+    axes[1,0].legend(customs, [p3.get_label(), p4.get_label(), '$m=%.3f$'%accuracy_gen,
+                        '$s=%.3f$'%rela_err_gen], fontsize=12, loc=3)
+
+    p5, = axes[1,1].step(F_hist, outp_hist, where='post', label='Predicted')
+    p6, = axes[1,1].step(F_hist, test_hist, where='post', label='Real', alpha=0.5)
+    axes[1,1].set_xlabel(r'$F$', fontsize=18)
+    axes[1,1].set_ylabel(r'Counts', fontsize=18)
+    axes[1,1].set_xlim([-0.05, 1.05])
+    axes[1,1].set_title('Average Histogram of $F$', fontsize=14)
+    axes[1,1].tick_params(labelsize=12, direction='in')
+    customs = [p5, p6, 
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5),
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5)]
+    axes[1,1].legend(customs, [p5.get_label(), p6.get_label(), '$m=%.3f$'%accuracy_hist,
+                        '$s=%.3f$'%rela_err_hist], fontsize=12)
+    
+    plt.savefig(folder_outp / ('average_S.png'), dpi=300, bbox_inches='tight') 
     plt.close()
         
 

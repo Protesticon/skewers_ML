@@ -82,7 +82,7 @@ def get_residual_network() -> torch.nn.Module:
                 out = self.drop_layer(out)
                 out = self.fc3(out)
 
-            return out.squeeze(0)
+            return out.squeeze(1)
     return ResNet(ResidualBlock,layers=[2,2,2])
 
 
