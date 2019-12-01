@@ -75,6 +75,8 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     # 1dps and pdf
     outp4fft = (test_outp_i-F_mean[1])/F_mean[1]
     test4fft = (test_ske_i -F_mean[0])/F_mean[0]
+    #outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
+    #test4fft = (test_ske_i -test_ske_i.mean())/test_ske_i.std()
     fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
     fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
     onePS_outp = np.zeros(bins)
@@ -90,49 +92,49 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     accuracy_i = (np.abs(onePS_outp-onePS_test)/onePS_test).mean()
     rela_err_i = (np.abs(onePS_outp-onePS_test)/onePS_test).std()
     
-    if accuracy_i>1:
-        fig = plt.figure(figsize=(12,8))
-        # plot skewers in F
-        axes1 = fig.add_subplot(2,1,1)
-        p1, = axes1.plot(vaxis, test_outp_i, label='Predicted', alpha=0.7 )
-        p2, = axes1.plot(vaxis, test_ske_i, label='Real', alpha=0.5 )
-        axes1.set_xlabel(r'$v$ (km/s)', fontsize=18, labelpad=0)
-        axes1.set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
-        axes1.set_ylim([-0.1, 1.1])
-        axes1.tick_params(labelsize=12, direction='in')
+    
+    fig = plt.figure(figsize=(12,8))
+    # plot skewers in F
+    axes1 = fig.add_subplot(2,1,1)
+    p1, = axes1.plot(vaxis, test_outp_i, label='Predicted', alpha=0.7)
+    p2, = axes1.plot(vaxis, test_ske_i, label='Real', alpha=0.5)
+    axes1.set_xlabel(r'$v$ (km/s)', fontsize=18, labelpad=0)
+    axes1.set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
+    axes1.set_ylim([-0.1, 1.1])
+    axes1.tick_params(labelsize=12, direction='in')
 
-        # plot 1DPS
-        axes2 = fig.add_subplot(2,2,3)
-        axes2.plot(rvaxis, onePS_outp, label='Predicted')
-        axes2.plot(rvaxis, onePS_test, label='Real', alpha=0.5)
-        axes2.set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=18)
-        axes2.set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
-        axes2.set_xscale('log')
-        axes2.set_yscale('log')
-        axes2.tick_params(labelsize=12, direction='in')
+    # plot 1DPS
+    axes2 = fig.add_subplot(2,2,3)
+    axes2.plot(rvaxis, onePS_outp, label='Predicted')
+    axes2.plot(rvaxis, onePS_test, label='Real', alpha=0.5)
+    axes2.set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=18)
+    axes2.set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
+    axes2.set_xscale('log')
+    axes2.set_yscale('log')
+    axes2.tick_params(labelsize=12, direction='in')
 
-        # plot pdf of F
-        axes3 = fig.add_subplot(2,2,4)
-        p3 = axes3.hist(test_outp_i, bins=np.arange(0,1.05,0.05),
-                  density=True, histtype='step', label='Predicted')
-        p4 = axes3.hist(test_ske_i, bins=np.arange(0,1.05,0.05),
-                  density=True, histtype='step', label='Real', alpha=0.5)
-        axes3.set_xlabel(r'$F$', fontsize=18)
-        axes3.set_ylabel(r'pdf', fontsize=18)
-        axes3.set_xlim([-0.05, 1.05])
-        axes3.tick_params(labelsize=12, direction='in')
-        customs = [p1, p2, 
-                  Line2D([0], [0], marker='o', color='w',
-                              markerfacecolor='k', markersize=5),
-                  Line2D([0], [0], marker='o', color='w',
-                              markerfacecolor='k', markersize=5)]
-        axes3.legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
-                            '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,1.5))
-        plt.subplots_adjust(wspace=0.18, hspace=0.23)
-        plt.savefig(folder_outp / \
-            ('x%03dy%03d.png'%(test_block_i[0], test_block_i[1])),
-            dpi=200, bbox_inches='tight')
-        plt.close()
+    # plot pdf of F
+    axes3 = fig.add_subplot(2,2,4)
+    p3 = axes3.hist(test_outp_i, bins=np.arange(0,1.05,0.05),
+              density=True, histtype='step', label='Predicted')
+    p4 = axes3.hist(test_ske_i, bins=np.arange(0,1.05,0.05),
+              density=True, histtype='step', label='Real', alpha=0.5)
+    axes3.set_xlabel(r'$F$', fontsize=18)
+    axes3.set_ylabel(r'pdf', fontsize=18)
+    axes3.set_xlim([-0.05, 1.05])
+    axes3.tick_params(labelsize=12, direction='in')
+    customs = [p1, p2, 
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5),
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5)]
+    axes3.legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
+                        '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,1.5))
+    plt.subplots_adjust(wspace=0.18, hspace=0.23)
+    plt.savefig(folder_outp / \
+        ('z%03dx%03d.png'%(test_block_i[0], test_block_i[1])),
+        dpi=200, bbox_inches='tight')
+    plt.close()
     
     stat_i = np.array([rvaxis, onePS_outp, onePS_test, accuracy_i, rela_err_i])
     
@@ -154,15 +156,17 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
     bin_bl = (logrv>=bins_l) & (logrv<bins_r)
     bin_bl[-1,-1] = True
     rvaxis = np.zeros(bins)
-    # 1DPS
-    outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
-    test4fft = (test_ske_i-test_ske_i.mean())/test_ske_i.std()
+    # 1dps
+    outp4fft = (test_outp_i-F_mean[1])/F_mean[1]
+    test4fft = (test_ske_i -F_mean[0])/F_mean[0]
+    #outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
+    #test4fft = (test_ske_i -test_ske_i.mean())/test_ske_i.std()
     fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
     fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
     onePS_outp = np.zeros(bins)
     onePS_test = np.zeros(bins)
     for jj in range(bins):
-        rvaxis[jj] = 10**logrv[bin_bl[jj]].mean()
+        rvaxis[jj] = 10**logrv[bin_bl[jj]].mean() 
         onePS_outp[jj]  = (rvax_t*fft_outp**2)[bin_bl[jj]].mean() * 2
         onePS_test[jj]  = (rvax_t*fft_test**2)[bin_bl[jj]].mean() * 2
     rvaxis = rvaxis * 2 * np.pi / v_end
@@ -171,7 +175,7 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
     
     accuracy_i = (np.abs(onePS_outp-onePS_test)/onePS_test).mean()
     rela_err_i = (np.abs(onePS_outp-onePS_test)/onePS_test).std()
-    
+    '''
     if accuracy_i>1:
         fig = plt.figure(figsize=(12,8))
         # plot skewers in F
@@ -215,7 +219,7 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
             ('x%dy%d.png'%(test_block_i[0], test_block_i[1])),
             dpi=200, bbox_inches='tight')
         plt.close()
-    
+    '''
     stat_i = np.array([rvaxis, onePS_outp, onePS_test, accuracy_i, rela_err_i])
     
     return stat_i

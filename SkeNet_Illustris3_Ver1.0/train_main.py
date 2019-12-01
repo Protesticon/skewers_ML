@@ -19,13 +19,13 @@ ske_name = 'spectra_Illustris3_N600_zaxis.npy'
 
 
 # hyper parameters
-train_len  = 6000 # number of tau blocks
-val_len    = 200  # number of tau blocks
-test_len   = 200  # number of skewers
+train_len  = 9000 # number of tau blocks
+val_len    = 500  # number of tau blocks
+test_len   = 500  # number of skewers
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 batch_size = 50
-learning_rate = 0.001
+learning_rate = 0.0005
 num_epochs = 20
 localtime = time.localtime()
 if ~(train_insize%2).all():
@@ -83,13 +83,15 @@ model = get_residual_network().float().to(device)
 # loss and optimizer
 criterion = nn.L1Loss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.2, patience=2)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=1)
 
 
 # Train the model
 curr_lr = learning_rate
 start_time = time.time()
 val_time   = localtime
+val_loss_l = np.zeros(num_epochs)
+tra_loss_l = np.zeros(num_epochs)
 
 lowest_losses = 9999.0
 lowest_time   = localtime
@@ -116,6 +118,8 @@ for epoch in range(num_epochs):
     train_losses = train(train_ske, train_block, DM_general, DM_param,
                     batch_size, train_insize, model, criterion, optimizer,
                     num_epochs, epoch, device, start_time, localtime)
+    tra_loss_l[epoch] = train_losses
+    
     with open('history.txt', 'a') as f:
         f.writelines('\nEpoch {:{}d}/{}:'.format(epoch+1,
                                                  int(np.log10(num_epochs)+1), num_epochs))
@@ -128,6 +132,7 @@ for epoch in range(num_epochs):
     val_losses = validate(val_ske, val_block, DM_general, DM_param,
                 batch_size, train_insize, model, criterion, device, start_time)
     val_time   = time.localtime()
+    val_loss_l[epoch] = val_losses
 
     # remember best prec@1 and save checkpoint if desired
     # is_best = prec1 > best_prec1
@@ -136,6 +141,8 @@ for epoch in range(num_epochs):
         lowest_time   = val_time
         torch.save(model.state_dict(),
              "params/params_%s.pkl"%time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
+    elif model.load_state_dict(torch.load('params/params_%s.pkl'\
+                %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
     
     # reducing learning rate if val_losses do not reduce
     scheduler.step(val_losses)
@@ -153,6 +160,15 @@ for epoch in range(num_epochs):
     print("\tLowest validation loss: {}".format(lowest_losses))
     
 
+fig = plt.figure(figsize=(12,6))
+plt.plot(np.arange(num_epochs)+1, val_loss_l, label='Validation Loss')
+plt.plot(np.arange(num_epochs)+1, tra_loss_l, label='Training Loss')
+plt.xticks(ticks=np.arange(6)*4, fontsize=15)
+plt.yticks(fontsize=15)
+plt.xlabel('Epoch', fontsize=22)
+plt.ylabel('Loss ({})'.format(criterion.__class__.__name__), fontsize=22)
+plt.legend(fontsize=18);
+plt.savefig('loss_process.png', dpi=500, bbox_inches='tight')
 
 
 

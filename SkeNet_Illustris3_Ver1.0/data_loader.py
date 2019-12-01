@@ -67,7 +67,7 @@ def load_DM(Path, FileName):
     DM_vz_fits.close(); del DM_vz_fits
 
     # normalize the velocity field
-    # v_mean = np.linalg.norm(([DM_vx, DM_vy, DM_vz]), axis=0).mean()
+    #v_mean = np.linalg.norm(([DM_vx, DM_vy, DM_vz]), axis=0).mean()
     v_T = 225
 
     # put 4 fields into 1 numpy array

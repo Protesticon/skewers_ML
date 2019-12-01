@@ -31,7 +31,7 @@ DM_name = ['DMdelta_Illustris3_L75_N600_v2.fits',
             'vx_cic_Illustris3_L75_N600_v2.fits',
             'vy_cic_Illustris3_L75_N600_v2.fits',
             'vz_cic_Illustris3_L75_N600_v2.fits']
-ske_name = 'spectra_Illustris3_N600_zaxis.npy'
+ske_name = 'spectra_Illustris3_N600_yaxis.npy'
 
 
 
@@ -39,7 +39,7 @@ ske_name = 'spectra_Illustris3_N600_zaxis.npy'
 train_insize = np.array([15, 15, 71]) # x, y, z respctively
 train_ousize = np.array([5, 5, 5]) # x, y, z respctively
 test_batch = 50
-localtime_n = ['2019-11-23 03:41:42']
+localtime_n = ['2019-11-28 07:40:55']
 for localtime_i in localtime_n:
     localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
 
@@ -52,8 +52,8 @@ for localtime_i in localtime_n:
     # load dark matter data
     print('Loading dark matter...')
     DM_general = load_DM(folder, DM_name)
-    DM_general = DM_general.transpose(0,1,2,3)
-    DM_general = DM_general[[0,1,2,3]]
+    DM_general = DM_general.transpose(0,3,1,2)
+    DM_general = DM_general[[0,3,1,2]]
     # basic paramters
     DM_param.pix  = len(DM_general[0])
     DM_param.len  = 75 # in Mpc/h
@@ -133,7 +133,7 @@ for localtime_i in localtime_n:
 
     print('Plotting example skewers...')
     # generate comparison images
-    folder_outp = Path.cwd()/'test_figs'/('%s_z_failures'\
+    folder_outp = Path.cwd()/'test_figs'/('%s_y'\
             %time.strftime("%Y-%m-%d_%H:%M:%S", localtime))
     if not os.path.exists(folder_outp):
         os.makedirs(folder_outp)
@@ -142,6 +142,7 @@ for localtime_i in localtime_n:
     from scipy import constants as C
     v_end  = 0.02514741843009228 * C.speed_of_light / 1e3
     F_mean = np.array([test_ske.mean(), test_outp.mean()])
+    print(F_mean)
     
     nrange = min(len(test_ske), 50)
     test_sp = np.arange(len(test_ske))
@@ -160,7 +161,7 @@ for localtime_i in localtime_n:
 
     # loop
     for i, ii in enumerate(test_sp1):
-        print('Plotting {:{}d}/{}, y{:03d}z{:03d}.png...'\
+        print('Plotting {:{}d}/{}, z{:03d}x{:03d}.png...'\
                 .format((i+1), int(np.log10(nrange)+1), nrange,
                         test_block[ii,0], test_block[ii,1]))
 
@@ -209,7 +210,7 @@ for localtime_i in localtime_n:
     rela_err_hist = np.abs((outp_hist[:-1]-test_hist[:-1])/test_hist[:-1]).std()
     
     
-    fig, axes = plt.subplots(2,2,figsize=(12,11))
+    fig, axes = plt.subplots(2,2,figsize=(15,11))
 
     p0=axes[0,0].hist(accu_arr, color='grey', bins=np.arange(0, 1.7, 0.1))
     axes[0,0].set_ylim(axes[0,0].get_ylim())
@@ -241,7 +242,7 @@ for localtime_i in localtime_n:
     axes[1,0].set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=14)
     axes[1,0].set_xscale('log')
     axes[1,0].set_yscale('log')
-    axes[1,0].set_ylim(axes[0,1].get_ylim())
+    axes[1,0].set_ylim(axes[1,0].get_ylim())
     axes[1,0].vlines(x=0.1, ymin=1e-8, ymax=1e8)
     axes[1,0].set_title('Average 1DPS', fontsize=14)
     axes[1,0].tick_params(labelsize=12, direction='in', which='both')
