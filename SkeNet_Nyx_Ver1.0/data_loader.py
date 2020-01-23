@@ -162,7 +162,7 @@ def load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     
     nz = int(ske.shape[-1] / train_ousize[2])
     val_block = val_block.reshape(-1, 3)
-    val_ske   = val_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2] )\
+    val_ske   = val_ske.reshape(-1, train_ousize[0], train_ousize[1], nz, train_ousize[2])\
             .transpose(0, 3, 1, 2, 4).reshape(-1, train_ousize[0], train_ousize[1], train_ousize[2])
     
     np.random.seed(np.random.randint(0,51))
@@ -186,8 +186,8 @@ def load_test(ske, block, id_seperate, train_ousize, batch_size, pre_proc):
     '''
     To load and shuffle the test set.
     '''
-    test_block = block[id_seperate == 2]
-    test_ske   = ske[id_seperate == 2]
+    test_block = block[id_seperate == 3]
+    test_ske   = ske[id_seperate == 3]
     
     nz = int(ske.shape[-1] / train_ousize[2])
 

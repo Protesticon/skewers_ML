@@ -261,3 +261,200 @@ Test History Record:
 	Test loss: 0.3711961456528394,  2020-01-18, 03:21:49
 	Average accuracy: 0.35898852463215986,  2020-01-18, 03:21:49
 	Average relative error: 0.49974861572324836,  2020-01-18, 03:21:49
+
+
+Training History Record,
+Time: 2020-01-22 08:20:54
+Train Frac: 15156250/15625000
+Real Train Frac: 15156250/15625000
+Val Frac: 1515000/15625000
+Real Val Frac: 1515000/15625000
+Input Size: [11 11 93]
+Output Size: [ 1  1 25]
+Training Field: log(tau), 97%
+Loss: L1Loss
+Optimizer: Adam
+Learning Rate: 0.0005
+Epoch  1/20:
+	Training loss : 0.28646297795993764,  2020-01-22, 09:10:24
+
+
+Training History Record,
+Time: 2020-01-23 06:36:25
+Train Frac: 15156250/15625000
+Real Train Frac: 15156250/15625000
+Val Frac: 1515000/15625000
+Real Val Frac: 1515000/15625000
+Input Size: [11 11 93]
+Output Size: [ 1  1 25]
+Training Field: log(tau), 97%
+Loss: L1Loss
+Optimizer: Adam
+Learning Rate: 0.0005
+Epoch  1/20:
+	Training loss : 0.28200358897631933,  2020-01-23, 07:06:47
+	Validation loss: 0.639995609130403,  2020-01-23, 07:09:20
+	Lowest val loss: 0.639995609130403,  2020-01-23, 07:09:20
+Epoch  2/20:
+	Training loss : 0.24524509052947624,  2020-01-23, 07:40:29
+	Validation loss: 0.6441687806063753,  2020-01-23, 07:43:10
+	Lowest val loss: 0.639995609130403,  2020-01-23, 07:09:20
+Epoch  3/20:
+	Training loss : 0.23659748819685475,  2020-01-23, 08:14:28
+	Validation loss: 0.628056394016192,  2020-01-23, 08:17:08
+	Lowest val loss: 0.628056394016192,  2020-01-23, 08:17:08
+
+
+Training History Record,
+Time: 2020-01-23 08:24:52
+Train Frac: 1515000/15625000
+Real Train Frac: 1515000/15625000
+Val Frac: 1515000/15625000
+Real Val Frac: 1515000/15625000
+Input Size: [11 11 93]
+Output Size: [ 1  1 25]
+Training Field: log(tau), 97%
+Loss: L1Loss
+Optimizer: Adam
+Learning Rate: 0.0005
+Epoch  1/20:
+	Training loss : 0.4191950705554029,  2020-01-23, 08:27:52
+	Validation loss: 0.5244637499302134,  2020-01-23, 08:30:12
+	Lowest val loss: 0.5244637499302134,  2020-01-23, 08:30:12
+Epoch  2/20:
+	Training loss : 0.33619390889117035,  2020-01-23, 08:33:02
+	Validation loss: 0.5160928225212364,  2020-01-23, 08:35:19
+	Lowest val loss: 0.5160928225212364,  2020-01-23, 08:35:19
+Epoch  3/20:
+	Training loss : 0.3231729824501689,  2020-01-23, 08:38:08
+	Validation loss: 0.5171488154150865,  2020-01-23, 08:40:32
+	Lowest val loss: 0.5160928225212364,  2020-01-23, 08:35:19
+
+
+Training History Record,
+Time: 2020-01-23 08:52:35
+Train Frac: 15156250/15625000
+Real Train Frac: 15156250/15625000
+Val Frac: 1515000/15625000
+Real Val Frac: 1515000/15625000
+Input Size: [11 11 93]
+Output Size: [ 1  1 25]
+Training Field: log(tau), 97%
+Loss: L1Loss
+Optimizer: Adam
+Learning Rate: 0.0005
+Epoch  1/20:
+	Training loss : 0.32393086158983486,  2020-01-23, 09:38:39
+	Validation loss: 0.3643315388842581,  2020-01-23, 09:41:45
+	Lowest val loss: 0.3643315388842581,  2020-01-23, 09:41:45
+Epoch  2/20:
+	Training loss : 0.29267557159158375,  2020-01-23, 10:25:22
+	Validation loss: 0.28515057185843046,  2020-01-23, 10:28:21
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch  3/20:
+	Training loss : 0.2881956256935277,  2020-01-23, 11:12:23
+	Validation loss: 0.4974362265453874,  2020-01-23, 11:15:17
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch  4/20:
+	Training loss : 0.2861404082836564,  2020-01-23, 11:57:06
+	Validation loss: 0.3447136985193385,  2020-01-23, 12:00:01
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch  5/20:
+	Training loss : 0.28519148785060217,  2020-01-23, 12:43:53
+	Validation loss: 0.3398802659102399,  2020-01-23, 12:46:48
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch  6/20:
+	Training loss : 0.25191300804590444,  2020-01-23, 13:30:38
+	Validation loss: 0.48447162975179087,  2020-01-23, 13:33:33
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch  7/20:
+	Training loss : 0.24906864897000422,  2020-01-23, 14:17:08
+	Validation loss: 0.4761811111970703,  2020-01-23, 14:19:59
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch  8/20:
+	Training loss : 0.248051990869119,  2020-01-23, 15:07:59
+	Validation loss: 0.4646281819089805,  2020-01-23, 15:11:14
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch  9/20:
+	Training loss : 0.2414991825253693,  2020-01-23, 15:57:51
+	Validation loss: 0.4667707711654921,  2020-01-23, 16:00:42
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 10/20:
+	Training loss : 0.24071082624700882,  2020-01-23, 16:44:34
+	Validation loss: 0.4651474629347474,  2020-01-23, 16:47:26
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 11/20:
+	Training loss : 0.2400919618010521,  2020-01-23, 17:32:04
+	Validation loss: 0.46543477490396784,  2020-01-23, 17:34:59
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 12/20:
+	Training loss : 0.23903664317942158,  2020-01-23, 18:27:15
+	Validation loss: 0.4616767593195336,  2020-01-23, 18:30:29
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 13/20:
+	Training loss : 0.23891271610173984,  2020-01-23, 19:18:53
+	Validation loss: 0.46138982809219425,  2020-01-23, 19:21:50
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 14/20:
+	Training loss : 0.23879178170506488,  2020-01-23, 20:06:56
+	Validation loss: 0.46113149708647144,  2020-01-23, 20:09:49
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 15/20:
+	Training loss : 0.23863981750023733,  2020-01-23, 20:58:08
+	Validation loss: 0.46224022233741907,  2020-01-23, 21:01:25
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 16/20:
+	Training loss : 0.23861763907953637,  2020-01-23, 21:55:25
+	Validation loss: 0.4622985141800575,  2020-01-23, 21:58:46
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 17/20:
+	Training loss : 0.23860382321016077,  2020-01-23, 22:47:18
+	Validation loss: 0.4623000094107669,  2020-01-23, 22:50:04
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 18/20:
+	Training loss : 0.23858510812963407,  2020-01-23, 23:33:43
+	Validation loss: 0.4623489882243742,  2020-01-23, 23:36:31
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 19/20:
+	Training loss : 0.23858337088344023,  2020-01-24, 00:28:14
+	Validation loss: 0.46233612643216704,  2020-01-24, 00:31:25
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+Epoch 20/20:
+	Training loss : 0.23858190301521537,  2020-01-24, 01:24:39
+	Validation loss: 0.4623262312496849,  2020-01-24, 01:27:55
+	Lowest val loss: 0.28515057185843046,  2020-01-23, 10:28:21
+
+
+Test History Record:
+	Test of the training at 2020-01-23 08:52:35
+	Test loss: 0.2855960098479447,  2020-01-24, 04:22:05
+	Average accuracy: 0.4770738124435895,  2020-01-24, 04:22:05
+	Average relative error: 0.9586510954686209,  2020-01-24, 04:22:05
+
+
+Test History Record:
+	Test of the training at 2020-01-23 08:52:35
+	Test loss: 0.28002804955436844,  2020-01-24, 04:27:07
+	Average accuracy: 0.40710080680106486,  2020-01-24, 04:27:07
+	Average relative error: 0.7586298206929336,  2020-01-24, 04:27:07
+
+
+Test History Record:
+	Test of the training at 2020-01-23 08:52:35
+	Test loss: 0.28002804955436844,  2020-01-24, 05:10:16
+	Average accuracy: 0.40710080680106486,  2020-01-24, 05:10:16
+	Average relative error: 0.7586298206929336,  2020-01-24, 05:10:16
+
+
+Test History Record:
+	Test of the training at 2020-01-23 08:52:35
+	Test loss: 0.28002804955436844,  2020-01-24, 05:31:29
+	Average accuracy: 0.40710080680106486,  2020-01-24, 05:31:29
+	Average relative error: 0.7586298206929336,  2020-01-24, 05:31:29
+
+
+Test History Record:
+	Test of the training at 2020-01-23 08:52:35
+	Test loss: 0.28002804955436844,  2020-01-24, 05:42:27
+	Average accuracy: 0.40710080680106486,  2020-01-24, 05:42:27
+	Average relative error: 0.7586298206929336,  2020-01-24, 05:42:27

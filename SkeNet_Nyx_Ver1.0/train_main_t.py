@@ -14,8 +14,8 @@ DM_name = ['deltaDM_Nyx_L20_N160_z2.4.npy',
             'vx_DM_Nyx_L20_N160_z2.4.npy',
             'vy_DM_Nyx_L20_N160_z2.4.npy',
             'vz_DM_Nyx_L20_N160_z2.4.npy']
-ske_name_tra = 'spectra_Nyx_z2.4_z.npy'
-ske_name_val = 'spectra_Nyx_z2.4_x.npy'
+ske_name = 'spectra_Nyx_z2.4_z.npy'
+ske_name_v = 'spectra_Nyx_z2.4_x.npy'
 
 
 
@@ -44,49 +44,39 @@ def pre_proc(tau, block):
 
 
 # device used to train the model
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 print('Using device:', torch.cuda.get_device_name(device=device.index))
 
 # load dark matter data
 print('Loading dark matter...')
-DM_general_tra = load_DM(folder, DM_name)
-DM_general_val = load_DM(folder, DM_name)
-DM_general_val = DM_general_val.transpose(0,2,3,1)[[0,2,3,1]]
-
+DM_general = load_DM(folder, DM_name)
 # basic paramters
-DM_param.pix  = len(DM_general_tra[0])
+DM_param.pix  = len(DM_general[0])
 DM_param.len  = 75 # in Mpc/h
 DM_param.reso = DM_param.len / DM_param.pix # in Mpc/h
 # test 
-if DM_general_tra.shape[1]<train_insize.min():
+if DM_general.shape[1]<train_insize.min():
     raise ValueError('DarkMatter cube size',
-        DM_general_tra.shape, 'is too small for train size', train_insize, '.')
-DM_general_tra = torch.tensor(DM_general_tra).float()
-DM_general_val = torch.tensor(DM_general_val).float()
+        DM_general.shape, 'is too small for train size', train_insize, '.')
+DM_general = torch.tensor(DM_general).float()
 
 
 # load skewers
 print('Loading skewers...')
-ske_tra, block_tra = load_skewers(folder, ske_name_tra, train_ousize, DM_param)
-ske_val, block_val = load_skewers(folder, ske_name_val, train_ousize, DM_param)
+ske, block = load_skewers(folder, ske_name, train_ousize, DM_param)
 # basic parameters
-ske_len = int(ske_tra.shape[-1])
+ske_len = int(ske.shape[-1])
+
 
 # divide the sample to training, validation set, and test set.
 print('Setting training and validation set...')
-#id_seperate = divide_data(ske, train_ousize, , val_len, test_len, localtime)
-id_seperate_tra = np.append(np.ones(train_len), np.zeros(ske_tra.shape[0]-train_len))
-np.random.shuffle(id_seperate_tra)
-id_seperate_val = np.append(np.ones(val_len), np.zeros(ske_val.shape[0]-val_len)) * 2
-np.random.shuffle(id_seperate_val)
+id_seperate = divide_data(ske, train_ousize, train_len, val_len, test_len, localtime)
 
-train_ske, train_block = load_train(ske_tra, block_tra, id_seperate_tra,
-                                    train_ousize, batch_size, pre_proc)
+train_ske, train_block = load_train(ske, block, id_seperate, train_ousize, batch_size, pre_proc)
 
-val_ske, val_block = load_val(ske_val, block_val, id_seperate_val,
-                              train_ousize, batch_size, pre_proc)
+val_ske, val_block = load_val(ske, block, id_seperate, train_ousize, batch_size, pre_proc)
 
-del id_seperate_tra, id_seperate_val
+del id_seperate
 
 
 print('Loading model, loss, optimizer etc...')
@@ -105,17 +95,17 @@ val_time   = localtime
 
 lowest_losses = 9999.0
 lowest_time   = localtime
-tra_loss_l = np.array([])
-val_loss_l = np.full(num_epochs, np.nan)
+tra_loss_l = np.zeros(num_epochs)
+val_loss_l = np.zeros(num_epochs)
 
 print('\nStart Training:')
 with open('history.txt', 'a') as f:
     f.writelines('\n\n\nTraining History Record,')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", localtime))
-    f.writelines('\nTrain Frac: {}/{}'.format(len(train_ske.flatten()), len(ske_tra.flatten())))
-    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske.flatten()), len(ske_tra.flatten())))
-    f.writelines('\nVal Frac: {}/{}'.format(len(val_ske.flatten()), len(ske_val.flatten())))
-    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske.flatten()), len(ske_val.flatten())))
+    f.writelines('\nTrain Frac: {}/{}'.format(len(train_ske.flatten()), len(ske.flatten())))
+    f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske.flatten()), len(ske.flatten())))
+    f.writelines('\nVal Frac: {}/{}'.format(len(val_ske.flatten()), len(ske.flatten())))
+    f.writelines('\nReal Val Frac: {}/{}'.format(len(val_ske.flatten()), len(ske.flatten())))
     f.writelines('\nInput Size: %s'%str(train_insize))
     f.writelines('\nOutput Size: %s'%str(train_ousize))
     f.writelines('\nTraining Field: %s'%(pre_proc.__doc__))
@@ -128,10 +118,10 @@ f.close()
 for epoch in range(num_epochs):
     # train for one epoch
     print("Begin Training Epoch {}".format(epoch+1))
-    train_losses, tra_loss_l = train(train_ske, train_block, DM_general_tra, DM_param,
+    train_losses = train(train_ske, train_block, DM_general, DM_param,
                     batch_size, train_insize, model, criterion, optimizer,
-                    num_epochs, epoch, device, start_time, localtime, tra_loss_l)
-    #tra_loss_l[epoch] = train_losses
+                    num_epochs, epoch, device, start_time, localtime)
+    tra_loss_l[epoch] = train_losses
     
     with open('history.txt', 'a') as f:
         f.writelines('\nEpoch {:{}d}/{}:'.format(epoch+1,
@@ -142,21 +132,10 @@ for epoch in range(num_epochs):
 
     # evaluate on validation set
     print("Begin Validation @ Epoch {}".format(epoch+1))
-    val_losses = validate(val_ske, val_block, DM_general_val, DM_param,
+    val_losses = validate(val_ske, val_block, DM_general, DM_param,
                 batch_size, train_insize, model, criterion, device, start_time)
     val_time   = time.localtime()
     val_loss_l[epoch] = val_losses
-    
-    fig = plt.figure(figsize=(12,6))
-    plt.plot(np.arange(num_epochs)+1, val_loss_l, label='Validation Loss')
-    plt.plot(tra_loss_l.reshape(-1,2)[:,0],
-             tra_loss_l.reshape(-1,2)[:,1], label='Training Loss')
-    plt.xticks(ticks=np.arange(6)*4, fontsize=15)
-    plt.yticks(fontsize=15)
-    plt.xlabel('Epoch', fontsize=22)
-    plt.ylabel('Loss ({})'.format(criterion.__class__.__name__), fontsize=22)
-    plt.legend(fontsize=18);
-    plt.savefig('loss_process.png', dpi=500, bbox_inches='tight')
 
     # remember best prec@1 and save checkpoint if desired
     # is_best = prec1 > best_prec1
@@ -184,6 +163,16 @@ for epoch in range(num_epochs):
     print("\tEpoch validation loss: {}".format(val_losses))
     print("\tLowest validation loss: {}".format(lowest_losses))    
     
+    
+fig = plt.figure(figsize=(12,6))
+plt.plot(np.arange(num_epochs)+1, val_loss_l, label='Validation Loss')
+plt.plot(np.arange(num_epochs)+1, tra_loss_l, label='Training Loss')
+plt.xticks(ticks=np.arange(6)*4, fontsize=15)
+plt.yticks(fontsize=15)
+plt.xlabel('Epoch', fontsize=22)
+plt.ylabel('Loss ({})'.format(criterion.__class__.__name__), fontsize=22)
+plt.legend(fontsize=18);
+plt.savefig('loss_process.png', dpi=500, bbox_inches='tight')
 
 
 
