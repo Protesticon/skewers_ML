@@ -23,3 +23,140 @@ Test History Record:
 	Test of the training at 2019-11-03 03:45:29
 	Test batch size: 50
 	Test loss: 0.006683911916203821,  2019-11-04, 13:40:36
+
+
+Training History Record,
+Time: 2019-11-04 14:30:32
+Train Frac: 24000000/216000000
+Real Train Frac: 22907350/216000000
+Val Frac: 540000/216000000
+Real Val Frac: 515050/216000000
+Input Size: [ 9  9 67]
+Training Field: 1-exp(-tau), tau<3
+Loss: SmoothL1Loss
+Optimizer: Adam
+Learning Rate: 0.0001
+Epoch 1/10:
+	Training loss: 0.00804070897731851,  2019-11-05, 07:16:58
+	Validation loss: 0.014035015706060713,  2019-11-05, 07:25:53
+	Lowest val loss: 0.014035015706060713,  2019-11-05, 07:25:53
+Epoch 2/10:
+	Training loss: 0.005794733900234545,  2019-11-06, 00:03:11
+	Validation loss: 0.013375741217473903,  2019-11-06, 00:12:09
+	Lowest val loss: 0.013375741217473903,  2019-11-06, 00:12:09
+Epoch 3/10:
+	Training loss: 0.005229954653643433,  2019-11-06, 16:58:01
+	Validation loss: 0.013097305205131353,  2019-11-06, 17:06:55
+	Lowest val loss: 0.013097305205131353,  2019-11-06, 17:06:55
+Epoch 4/10:
+	Training loss: 0.004926088424703753,  2019-11-07, 09:44:39
+	Validation loss: 0.012843851881032868,  2019-11-07, 09:53:21
+	Lowest val loss: 0.012843851881032868,  2019-11-07, 09:53:21
+Epoch 5/10:
+	Training loss: 0.004729580884520157,  2019-11-08, 02:35:42
+	Validation loss: 0.012669313232816701,  2019-11-08, 02:45:26
+	Lowest val loss: 0.012669313232816701,  2019-11-08, 02:45:26
+Epoch 6/10:
+	Training loss: 0.004587402417329508,  2019-11-08, 19:35:14
+	Validation loss: 0.012637239269488702,  2019-11-08, 19:44:01
+	Lowest val loss: 0.012637239269488702,  2019-11-08, 19:44:01
+Epoch 7/10:
+	Training loss: 0.004475899078445011,  2019-11-09, 12:14:18
+	Validation loss: 0.012559365178243385,  2019-11-09, 12:23:35
+	Lowest val loss: 0.012559365178243385,  2019-11-09, 12:23:35
+Epoch 8/10:
+	Training loss: 0.004388193549268951,  2019-11-10, 05:05:19
+	Validation loss: 0.012541042080588293,  2019-11-10, 05:14:20
+	Lowest val loss: 0.012541042080588293,  2019-11-10, 05:14:20
+Epoch 9/10:
+	Training loss: 0.004313243698983593,  2019-11-10, 22:04:09
+	Validation loss: 0.01278571134625799,  2019-11-10, 22:13:43
+	Lowest val loss: 0.012541042080588293,  2019-11-10, 05:14:20
+Epoch 10/10:
+	Training loss: 0.004252111928272317,  2019-11-11, 17:17:40
+	Validation loss: 0.01260539987921079,  2019-11-11, 17:28:24
+	Lowest val loss: 0.012541042080588293,  2019-11-10, 05:14:20
+
+
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test loss: 0.0066822095920982365,  2019-11-13, 08:35:27
+	Average accuracy: 0.4641913755177628,  2019-11-13, 08:35:27
+	Average relative error: 0.6755147321736437,  2019-11-13, 08:35:27
+
+
+Test History Record:
+	Test of the training at 2019-11-04 14:30:32
+	Test loss: 0.00705785564986248,  2019-11-13, 08:41:49
+	Average accuracy: 0.455081012553707,  2019-11-13, 08:41:49
+	Average relative error: 0.7101094339635726,  2019-11-13, 08:41:49
+
+
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test loss: 0.006699177145793935,  2019-11-15, 14:11:07
+	Average accuracy: 0.4607644282764181,  2019-11-15, 14:11:07
+	Average relative error: 0.6680040516780765,  2019-11-15, 14:11:07
+
+
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test loss: 0.006670227524902354,  2019-11-15, 14:36:29
+	Average accuracy: 0.47079889322773455,  2019-11-15, 14:36:29
+	Average relative error: 0.6996908624793948,  2019-11-15, 14:36:29
+
+
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test loss: 0.006678702998031743,  2019-11-15, 14:48:22
+	Average accuracy: 0.46164604472845755,  2019-11-15, 14:48:22
+	Average relative error: 0.6672744979734803,  2019-11-15, 14:48:22
+
+
+Test History Record:
+	Test of the training at 2019-11-04 14:30:32
+	Test loss: 0.007059246364789639,  2019-11-15, 14:57:37
+	Average accuracy: 0.46622182281234337,  2019-11-15, 14:57:37
+	Average relative error: 0.738621248512198,  2019-11-15, 14:57:37
+
+
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test loss: 0.006675731825965462,  2019-11-16, 08:04:04
+	Average accuracy: 0.4634816197571764,  2019-11-16, 08:04:04
+	Average relative error: 0.673914840385848,  2019-11-16, 08:04:04
+
+
+Test History Record:
+	Test of the training at 2019-11-04 14:30:32
+	Test loss: 0.007083036731308614,  2019-11-16, 08:12:58
+	Average accuracy: 0.4551830607399036,  2019-11-16, 08:12:58
+	Average relative error: 0.716552716035781,  2019-11-16, 08:12:58
+
+
+Test History Record:
+	Test of the training at 2019-11-04 14:30:32
+	Test loss: 0.016871883308352455,  2019-11-16, 10:10:08
+	Average accuracy: 0.6765017581930326,  2019-11-16, 10:10:08
+	Average relative error: 1.1526362905930316,  2019-11-16, 10:10:08
+
+
+Test History Record:
+	Test of the training at 2019-11-03 03:45:29
+	Test loss: 0.025424203393332998,  2019-11-16, 10:21:37
+	Average accuracy: 0.8015383106687025,  2019-11-16, 10:21:37
+	Average relative error: 1.3585327036123533,  2019-11-16, 10:21:37
+
+
+Test History Record:
+	Test of the training at 2019-11-04 14:30:32
+	Test loss: 0.007061074034903261,  2019-11-27, 03:32:37
+	Average accuracy: 2.4892905097437885,  2019-11-27, 03:32:37
+	Average relative error: 7.770553725799777,  2019-11-27, 03:32:37
+
+
+Test History Record:
+	Test of the training at 2019-11-04 14:30:32
+	Test loss: 0.007055532789343791,  2019-11-27, 03:41:19
+	Average accuracy: 2.442507459983337,  2019-11-27, 03:41:19
+	Average relative error: 7.592983170927137,  2019-11-27, 03:41:19

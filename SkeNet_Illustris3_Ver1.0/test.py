@@ -4,6 +4,7 @@ import time
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -18,7 +19,10 @@ def test(test_ske, test_block, DM_general, DM_param,
 
     losses = AverageMeter()
     
-    test_outp  = np.zeros(test_ske.shape).flatten()
+    # switch to eval mode
+    model.eval()
+    
+    test_outp = np.zeros(test_ske.shape)
 
     with torch.no_grad():
         for i, test_data in enumerate(test_ske, 0):
@@ -26,7 +30,7 @@ def test(test_ske, test_block, DM_general, DM_param,
             # get the targets;
             targets = test_data.to(device)
             # x,y,z are the central coordinates of each input DM cube
-            x, y, z = test_block[(i*test_batch+np.arange(test_batch)).astype('int')].transpose()
+            x, y, z = test_block[(i*test_batch+np.arange(test_batch)).astype('int')].T
             # make coordinate index, retrieve input dark matter
             batch_grids = make_batch_grids(x, y, z, test_batch, train_size, DM_param)
             inputs = DM_general[batch_grids].to(device)
@@ -38,190 +42,184 @@ def test(test_ske, test_block, DM_general, DM_param,
             losses.update(loss.item(), test_batch)
             
             # record outputs
-            test_outp[i*test_batch:(i+1)*test_batch] = outputs.detach().cpu().numpy().flatten()
+            test_outp[i] = outputs.detach().cpu().numpy()
 
             if (i+1) % 100 == 0:
-                print ("Step [{}/{}] Loss: {:.4f}, Time: {:.4f}"
-                    .format(i+1, test_ske.shape[0], loss.item(), time.time()-start_time))
+                print("Step [{:{}d}/{}] Loss: {:.4f}, Time: {:.4f}"
+                    .format(i+1,int(np.log10(test_ske.shape[0])+1),
+                            test_ske.shape[0], loss.item(), time.time()-start_time))
     
-    test_outp = test_outp.reshape(-1, DM_param.pix)
+    test_outp = test_outp.reshape(-1, test_ske.shape[-3], test_ske.shape[-2], test_ske.shape[-1])
 
     return test_outp, losses.avg
 
 
 
-# pre-process
-def pre_proc(tau, block):
-    '''1-exp(-tau)'''
-    tau   = np.array(tau)
-    block = np.array(block)
-    return (1-np.exp(-1*tau), block)
+def test_plot(test_block_i, test_outp_i, test_ske_i,
+        test_DM_i, F_mean, v_end, folder_outp, bins):
+    
+    # plotting 1dps and pdf of skewers
+    # k axis
+    ske_len = len(test_outp_i)
+    vaxis  = np.arange(0, v_end, v_end/ske_len)
+    rvax_t = np.arange(int(ske_len/2))
+    logrv  = np.log10(rvax_t)
+    logrv[0] = logrv[1]-10
+    rvmin, rvmax = 0, logrv[-1]
+    bin_sz = (rvmax-rvmin)/bins
+    bins_l = np.arange(rvmin, rvmax, bin_sz).reshape(-1,1)
+    bins_r = np.arange(rvmin+bin_sz, rvmax+bin_sz, bin_sz).reshape(-1,1)
+    bin_bl = (logrv>=bins_l) & (logrv<bins_r)
+    bin_bl[-1,-1] = True
+    rvaxis = np.zeros(bins)
+    # 1dps and pdf
+    outp4fft = (test_outp_i-F_mean[1])/F_mean[1]
+    test4fft = (test_ske_i -F_mean[0])/F_mean[0]
+    #outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
+    #test4fft = (test_ske_i -test_ske_i.mean())/test_ske_i.std()
+    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
+    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
+    onePS_outp = np.zeros(bins)
+    onePS_test = np.zeros(bins)
+    for jj in range(bins):
+        rvaxis[jj] = 10**logrv[bin_bl[jj]].mean() 
+        onePS_outp[jj]  = (rvax_t*fft_outp**2)[bin_bl[jj]].mean() * 2
+        onePS_test[jj]  = (rvax_t*fft_test**2)[bin_bl[jj]].mean() * 2
+    rvaxis = rvaxis * 2 * np.pi / v_end
+    onePS_outp = onePS_outp * 2 * np.pi / v_end
+    onePS_test = onePS_test * 2 * np.pi / v_end
+    
+    accuracy_i = (np.abs(onePS_outp-onePS_test)/onePS_test).mean()
+    rela_err_i = (np.abs(onePS_outp-onePS_test)/onePS_test).std()
+    
+    
+    fig = plt.figure(figsize=(12,8))
+    # plot skewers in F
+    axes1 = fig.add_subplot(2,1,1)
+    p1, = axes1.plot(vaxis, test_outp_i, label='Predicted', alpha=0.7)
+    p2, = axes1.plot(vaxis, test_ske_i, label='Real', alpha=0.5)
+    axes1.set_xlabel(r'$v$ (km/s)', fontsize=18, labelpad=0)
+    axes1.set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
+    axes1.set_ylim([-0.1, 1.1])
+    axes1.tick_params(labelsize=12, direction='in')
+
+    # plot 1DPS
+    axes2 = fig.add_subplot(2,2,3)
+    axes2.plot(rvaxis, onePS_outp, label='Predicted')
+    axes2.plot(rvaxis, onePS_test, label='Real', alpha=0.5)
+    axes2.set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=18)
+    axes2.set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
+    axes2.set_xscale('log')
+    axes2.set_yscale('log')
+    axes2.tick_params(labelsize=12, direction='in')
+
+    # plot pdf of F
+    axes3 = fig.add_subplot(2,2,4)
+    p3 = axes3.hist(test_outp_i, bins=np.arange(0,1.05,0.05),
+              density=True, histtype='step', label='Predicted')
+    p4 = axes3.hist(test_ske_i, bins=np.arange(0,1.05,0.05),
+              density=True, histtype='step', label='Real', alpha=0.5)
+    axes3.set_xlabel(r'$F$', fontsize=18)
+    axes3.set_ylabel(r'pdf', fontsize=18)
+    axes3.set_xlim([-0.05, 1.05])
+    axes3.tick_params(labelsize=12, direction='in')
+    customs = [p1, p2, 
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5),
+              Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor='k', markersize=5)]
+    axes3.legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
+                        '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,1.5))
+    plt.subplots_adjust(wspace=0.18, hspace=0.23)
+    plt.savefig(folder_outp / \
+        ('z%03dx%03d.png'%(test_block_i[0], test_block_i[1])),
+        dpi=200, bbox_inches='tight')
+    plt.close()
+    
+    stat_i = np.array([rvaxis, onePS_outp, onePS_test, accuracy_i, rela_err_i])
+    
+    return stat_i
 
 
 
-# Path and data file name
-folder  = Path.cwd().parent / 'Illustris3'
-DM_name = ['DMdelta_Illustris3_L75_N600.fits', 
-            'vx_cic_Illustris3_L75_N600.fits',
-            'vy_cic_Illustris3_L75_N600.fits',
-            'vz_cic_Illustris3_L75_N600.fits']
-ske_name = 'spectra_Illustris3_N600.dat'
+def test_accuracy(test_block_i, test_outp_i, test_ske_i,
+        F_mean, v_end, folder_outp, bins):
+    ske_len = len(test_outp_i)
+    vaxis  = np.arange(0, v_end, v_end/ske_len)
+    rvax_t = np.arange(int(ske_len/2))
+    logrv  = np.log10(rvax_t)
+    logrv[0] = logrv[1]-10
+    rvmin, rvmax = 0, logrv[-1]
+    bin_sz = (rvmax-rvmin)/bins
+    bins_l = np.arange(rvmin, rvmax, bin_sz).reshape(-1,1)
+    bins_r = np.arange(rvmin+bin_sz, rvmax+bin_sz, bin_sz).reshape(-1,1)
+    bin_bl = (logrv>=bins_l) & (logrv<bins_r)
+    bin_bl[-1,-1] = True
+    rvaxis = np.zeros(bins)
+    # 1dps
+    outp4fft = (test_outp_i-F_mean[1])/F_mean[1]
+    test4fft = (test_ske_i -F_mean[0])/F_mean[0]
+    #outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
+    #test4fft = (test_ske_i -test_ske_i.mean())/test_ske_i.std()
+    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
+    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
+    onePS_outp = np.zeros(bins)
+    onePS_test = np.zeros(bins)
+    for jj in range(bins):
+        rvaxis[jj] = 10**logrv[bin_bl[jj]].mean() 
+        onePS_outp[jj]  = (rvax_t*fft_outp**2)[bin_bl[jj]].mean() * 2
+        onePS_test[jj]  = (rvax_t*fft_test**2)[bin_bl[jj]].mean() * 2
+    rvaxis = rvaxis * 2 * np.pi / v_end
+    onePS_outp = onePS_outp * 2 * np.pi / v_end
+    onePS_test = onePS_test * 2 * np.pi / v_end
+    
+    accuracy_i = (np.abs(onePS_outp-onePS_test)/onePS_test).mean()
+    rela_err_i = (np.abs(onePS_outp-onePS_test)/onePS_test).std()
+    '''
+    if accuracy_i>1:
+        fig = plt.figure(figsize=(12,8))
+        # plot skewers in F
+        axes1 = fig.add_subplot(2,1,1)
+        p1, = axes1.plot(vaxis, test_outp_i, label='Predicted', alpha=0.7 )
+        p2, = axes1.plot(vaxis, test_ske_i, label='Real', alpha=0.5 )
+        axes1.set_xlabel(r'$v$ (km/s)', fontsize=18, labelpad=0)
+        axes1.set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
+        axes1.set_ylim([-0.1, 1.1])
+        axes1.tick_params(labelsize=12, direction='in')
 
+        # plot 1DPS
+        axes2 = fig.add_subplot(2,2,3)
+        axes2.plot(rvaxis, onePS_outp, label='Predicted')
+        axes2.plot(rvaxis, onePS_test, label='Real', alpha=0.5)
+        axes2.set_xlabel(r'$k\ (\mathrm{s/km})$', fontsize=18)
+        axes2.set_ylabel(r'$kP_\mathrm{1D}/\pi$', fontsize=18)
+        axes2.set_xscale('log')
+        axes2.set_yscale('log')
+        axes2.tick_params(labelsize=12, direction='in')
 
-
-# hyper parameters
-train_size = np.array([9, 9, 67]) # x, y, z respctively
-test_batch = 50
-learning_rate = 0.0001
-num_epochs = 10
-localtime_n = ['2019-10-26 13:27:25', '2019-10-28 08:26:40']
-for localtime_i in localtime_n:
-    localtime = time.strptime(localtime_i, '%Y-%m-%d %H:%M:%S')
-    if ~(train_size%2).all():
-        raise ValueError('train size scannot be even.')
-
-
-
-    # device used to train the model
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
-    print('Using device:', device)
-
-
-
-    # load dark matter data
-    print('Loading dark matter...')
-    DM_general = load_DM(folder, DM_name)
-    # basic paramters
-    DM_param.pix  = len(DM_general[0])
-    DM_param.len  = 75 # in Mpc/h
-    DM_param.reso = DM_param.len / DM_param.pix # in Mpc/h
-    # test
-    if DM_general.shape[1]<train_size.min():
-        raise ValueError('DarkMatter cube size',
-            DM_general.shape, 'is too small for train size', train_size, '.')
-    DM_general = torch.tensor(DM_general).float()
-
-
-    # load skewers
-    print('Loading skewers...')
-    ske, block = load_skewers(folder, ske_name, DM_param)
-    # basic parameters
-    ske_len = ske.shape[1]
-
-
-    # divide the sample to training, validation set, and test set.
-    print('Setting test set...')
-    with open("id_seperate/id_seperate_%s.txt"\
-              %time.strftime("%Y-%m-%d_%H:%M:%S", localtime), "r") as f:
-        aa = f.readlines()
-        id_seperate = np.array(list(aa[0][::3])).astype('int')
-        del aa
-    f.close()
-
-    test_ske, test_block = load_test(ske, block, id_seperate, test_batch)
-    test_ske, test_block = pre_proc(test_ske, test_block)
-    test_ske = torch.FloatTensor(test_ske)
-    del id_seperate
-
-
-    # load model
-    model = get_residual_network().float().to(device)
-    model.load_state_dict(torch.load('params/params_%s.pkl'\
-            %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
-    # model.load_state_dict(torch.load('params/HyPhy_%s.pkl'\
-    #       %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
-
-
-
-    # loss
-    criterion = nn.SmoothL1Loss()
-
-
-    # record starr time
-    start_time = time.time()
-
-
-    # start test
-    print('Begin testing...')
-    test_outp, test_losses = test(test_ske, test_block, DM_general, DM_param,
-                            test_batch, train_size, model, criterion, device, start_time)
-
-    print("Test Summary: ")
-    print("\tTest loss: {}".format(test_losses))
-
-    # restore test skewers
-    test_ske   = test_ske.numpy().reshape(-1, DM_param.pix)
-    test_block = test_block.reshape(-1, DM_param.pix, 3)
-
-
-    # generate comparison images
-    if not os.path.exists(Path.cwd() / 'test_figs' / ('%s'\
-            %time.strftime("%Y-%m-%d_%H:%M:%S", localtime))):
-        os.makedirs(Path.cwd() / 'test_figs' / ('%s'\
-            %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)))
-
-    print('Plotting example skewers...')
-    from scipy import constants as C
-    v_end  = 0.02514741843009228 * C.speed_of_light / 1e3
-    vaxis  = np.arange(0, v_end, v_end/600)
-    nrange = min(len(test_ske), 50)
-    for ii in range(nrange):
-        print('Plotting {}/{}, x{}y{}.png...'\
-              .format((ii+1), nrange, test_block[ii,0,0], test_block[ii,0,1]))
-
-        # generating skewers
-        fig, axes = plt.subplots(2, 1, figsize=(12, 8))
-        p1, = axes[0].plot(vaxis, -np.log(1-test_outp[ii]), label='Predicted' )
-        p2, = axes[0].plot(vaxis, -np.log(1-test_ske[ii]), label='Real', alpha=0.5)
-        axes[0].set_xlabel(r'v (km/s)', fontsize=18)
-        axes[0].set_ylabel(r'$\tau$', fontsize=18)
-        axes[0].set_ylim([0,3])
-        subaxs = axes[0].twinx()
-        p3, = subaxs.plot(vaxis, DM_general[0, int(test_block[ii,0,0]), int(test_block[ii,0,1]), :].numpy(),
-                           label='DM', alpha=0.3, color='green' )
-        subaxs.set_ylim([0, 5])
-        subaxs.set_ylabel(r'DM Over Den+1', fontsize=18)
-        axes[0].legend([p1,p2,p3], [l.get_label() for l in [p1,p2,p3]],
-                       fontsize=18, bbox_to_anchor=(1.26,0.75))
-
-        axes[1].plot(vaxis, 1-test_outp[ii], label='Predicted', alpha=0.7 )
-        axes[1].plot(vaxis, 1-test_ske[ii], label='Real', alpha=0.5 )
-        axes[1].set_xlabel(r'v (km/s)', fontsize=18)
-        axes[1].set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
-        axes[1].set_ylim([-0.1, 1.1])
-        axes[1].legend(fontsize=18, bbox_to_anchor=(1.26,0.75))
-
-        axes[1].get_shared_x_axes().join(axes[1], axes[0])
-        plt.subplots_adjust(wspace=0, hspace=0.1)
-        plt.savefig(Path.cwd() / 'test_figs' / ('%s'\
-            %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
-            ('x%dy%d.png'%(test_block[ii,0,0], test_block[ii,0,1])),
+        # plot pdf of F
+        axes3 = fig.add_subplot(2,2,4)
+        p3 = axes3.hist(test_outp_i, bins=np.arange(0,1.05,0.05),
+                  density=True, histtype='step', label='Predicted')
+        p4 = axes3.hist(test_ske_i, bins=np.arange(0,1.05,0.05),
+                  density=True, histtype='step', label='Real', alpha=0.5)
+        axes3.set_xlabel(r'$F$', fontsize=18)
+        axes3.set_ylabel(r'pdf', fontsize=18)
+        axes3.set_xlim([-0.05, 1.05])
+        axes3.tick_params(labelsize=12, direction='in')
+        customs = [p1, p2, 
+                  Line2D([0], [0], marker='o', color='w',
+                              markerfacecolor='k', markersize=5),
+                  Line2D([0], [0], marker='o', color='w',
+                              markerfacecolor='k', markersize=5)]
+        axes3.legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
+                            '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,1.5))
+        plt.subplots_adjust(wspace=0.18, hspace=0.23)
+        plt.savefig(folder_outp / \
+            ('x%dy%d.png'%(test_block_i[0], test_block_i[1])),
             dpi=200, bbox_inches='tight')
         plt.close()
-
-        # generating cdf of skewers
-        fig, axes = plt.subplots(1, 1, figsize=(12, 5))
-        sort_test = np.sort(test_ske[ii].max()-test_ske[ii])
-        sort_outp = np.sort(test_outp[ii].max()-test_outp[ii])
-        axes.hist(sort_outp/sort_outp[-1], bins=20, density=True,
-                  histtype='step', label='Predicted')
-        axes.hist(sort_test/sort_test[-1], bins=20, density=True,
-                  histtype='step', label='Real', alpha=0.5)
-        axes.set_xlabel(r'normalized F', fontsize=18)
-        axes.set_ylabel(r'pdf', fontsize=18)
-        axes.legend(fontsize=18, bbox_to_anchor=(1.26,0.75) )
-        plt.savefig(Path.cwd() / 'test_figs' / ('%s'\
-            %time.strftime("%Y-%m-%d_%H:%M:%S", localtime)) / \
-            ('spectrum_x%dy%d.png'%(test_block[ii,0,0], test_block[ii,0,1])),
-            dpi=200, bbox_inches='tight')
-        plt.close()
-
-    # record this test
-    with open('history.txt', 'a') as f:
-        f.writelines('\n\n\nTest History Record:')
-        f.writelines('\n\tTest of the training at %s'\
-                %time.strftime("%Y-%m-%d %H:%M:%S", localtime))
-        f.writelines('\n\tTest batch size: %d'%test_batch)
-        f.writelines('\n\tTest loss: %s,  '%str(test_losses)\
-            +time.strftime("%Y-%m-%d, %H:%M:%S", time.localtime()))
-    f.close()
+    '''
+    stat_i = np.array([rvaxis, onePS_outp, onePS_test, accuracy_i, rela_err_i])
+    
+    return stat_i

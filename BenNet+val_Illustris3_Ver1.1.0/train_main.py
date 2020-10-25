@@ -95,7 +95,7 @@ lowest_time   = localtime
 
 print('\nStart Training:')
 with open('history.txt', 'a') as f:
-    f.writelines('\n\n\nTraining History Record,')
+    f.writelines('\n\n\nTraining History Record:')
     f.writelines('\nTime: '+time.strftime("%Y-%m-%d %H:%M:%S", localtime))
     f.writelines('\nTrain Frac: {}/{}'.format(train_len*ske_len, len(ske.flatten())))
     f.writelines('\nReal Train Frac: {}/{}'.format(len(train_ske)*batch_size, len(ske.flatten())))
