@@ -53,9 +53,9 @@ print('Using device:', torch.cuda.get_device_name(device=device.index))
 # load dark matter data
 print('Loading dark matter...')
 DM_general_tra = load_DM(folder, DM_name)
-DM_general_tra[0] = np.log(DM_general_tra[0])**0.4
+DM_general_tra[0] = np.log(DM_general_tra[0])
 DM_general_val = load_DM(folder, DM_name)
-DM_general_val[0] = np.log(DM_general_val[0])**0.4
+DM_general_val[0] = np.log(DM_general_val[0])
 DM_general_val = DM_general_val.transpose(0,2,3,1)[[0,2,3,1]]
 
 # basic paramters
@@ -133,7 +133,7 @@ with open('history.txt', 'a') as f:
     f.writelines('\nInput Size: %s'%str(train_insize))
     f.writelines('\nOutput Size: %s'%str(train_ousize))
     f.writelines('\nTraining Transformation: %s'%(pre_proc.__doc__))
-    f.writelines('\nInput DM Transformation: log(delta)**0.4')
+    f.writelines('\nInput DM Transformation: log(delta)')
     f.writelines('\nLoss: %s'%criterion.__class__.__name__)
     f.writelines('\nOptimizer: %s'%optimizer.__class__.__name__)
     f.writelines('\nLearning Rate: %s'%str(learning_rate))
