@@ -56,7 +56,7 @@ def test(test_ske, test_block, DM_general, DM_param,
 
 
 def test_plot(test_block_i, test_outp_i, test_ske_i,
-        test_DM_i, F_mean, v_end, folder_outp, bins):
+        test_DM_i, test_vz_i, F_mean, v_end, folder_outp, bins):
     
     # plotting 1dps and pdf of skewers
     # k axis
@@ -101,8 +101,22 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     p2, = axes1.plot(vaxis, test_ske_i, label='Real', alpha=0.5)
     axes1.set_xlabel(r'$v$ (km/s)', fontsize=18, labelpad=0)
     axes1.set_ylabel(r'$F = \mathrm{e}^{-\tau}$', fontsize=18)
-    axes1.set_ylim([-0.1, 1.1])
+    axes1.set_xlim([0, vaxis.max()])
+    axes1.set_ylim([0, 1])
     axes1.tick_params(labelsize=12, direction='in')
+    
+    v_step = v_end/ske_len
+    vz_i_shift = (test_vz_i / v_step)+0.5
+    vz_i_shift = np.trunc(vz_i_shift)
+    ind = (np.arange(ske_len) + vz_i_shift.astype('int'))%ske_len
+    DM_i_shift = np.zeros(ske_len)
+    for k in range(ske_len):
+        DM_i_shift[k] = test_DM_i[ind==k].sum()
+    subaxs = axes1.twinx()
+    p5, = subaxs.plot(vaxis, DM_i_shift, label='Shifted DM', alpha=0.3, color='green' )
+    #subaxs.set_ylim([0, 5])
+    subaxs.set_ylabel(r'DM Over Den+1', fontsize=18)
+    
 
     # plot 1DPS
     axes2 = fig.add_subplot(2,2,3)
@@ -124,7 +138,7 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     axes3.set_ylabel(r'pdf', fontsize=18)
     axes3.set_xlim([-0.05, 1.05])
     axes3.tick_params(labelsize=12, direction='in')
-    customs = [p1, p2, 
+    customs = [p1, p2, p5,
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5),
               Line2D([0], [0], marker='o', color='w',
