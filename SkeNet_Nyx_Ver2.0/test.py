@@ -114,7 +114,7 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
         DM_i_shift[k] = test_DM_i[ind==k].sum()
     subaxs = axes1.twinx()
     p5, = subaxs.plot(vaxis, DM_i_shift, label='Shifted DM', alpha=0.3, color='green' )
-    #subaxs.set_ylim([0, 5])
+    subaxs.set_ylim([0, 10])
     subaxs.set_ylabel(r'DM Over Den+1', fontsize=18)
     
 
