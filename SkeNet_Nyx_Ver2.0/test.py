@@ -106,14 +106,15 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     axes1.tick_params(labelsize=12, direction='in')
     
     v_step = v_end/ske_len
-    vz_i_shift = (test_vz_i / v_step)+0.5
+    vz_i_shift = (test_vz_i*225 / v_step)+0.5
     vz_i_shift = np.trunc(vz_i_shift)
     ind = (np.arange(ske_len) + vz_i_shift.astype('int'))%ske_len
     DM_i_shift = np.zeros(ske_len)
     for k in range(ske_len):
         DM_i_shift[k] = test_DM_i[ind==k].sum()
     subaxs = axes1.twinx()
-    p5, = subaxs.plot(vaxis, DM_i_shift, label='Shifted DM', alpha=0.3, color='green' )
+    p5, = subaxs.plot(vaxis, test_DM_i, label='DM', alpha=0.5, color='black')
+    p6, = subaxs.plot(vaxis, DM_i_shift, label='Shifted DM', alpha=0.3, color='green')
     subaxs.set_ylim([0, 10])
     subaxs.set_ylabel(r'DM Over Den+1', fontsize=18)
     
@@ -138,12 +139,13 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     axes3.set_ylabel(r'pdf', fontsize=18)
     axes3.set_xlim([-0.05, 1.05])
     axes3.tick_params(labelsize=12, direction='in')
-    customs = [p1, p2, p5,
+    
+    customs = [p1, p2, p5, p6,
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5),
               Line2D([0], [0], marker='o', color='w',
                           markerfacecolor='k', markersize=5)]
-    axes3.legend(customs, [p1.get_label(), p2.get_label(), '$m=%.3f$'%accuracy_i,
+    axes3.legend(customs, [p1.get_label(), p2.get_label(), p5.get_label(), p6.get_label(), '$m=%.3f$'%accuracy_i,
                         '$s=%.3f$'%rela_err_i], fontsize=18, bbox_to_anchor=(1.06,1.5))
     plt.subplots_adjust(wspace=0.18, hspace=0.23)
     plt.savefig(folder_outp / \

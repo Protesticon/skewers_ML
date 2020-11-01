@@ -1979,3 +1979,38 @@ Test History Record:
 	Test loss: 0.19883000280818727,  2020-10-30, 10:13:05
 	Average accuracy: 0.32690422154761045,  2020-10-30, 10:13:05
 	Average relative error: 0.602722689866385,  2020-10-30, 10:13:05
+
+
+Test History Record:
+	Test of the training at 2020-10-23 18:49:13
+	Test loss: 0.19603885131159632,  2020-10-30, 10:28:36
+	Average accuracy: 0.2224261429710834,  2020-10-30, 10:28:36
+	Average relative error: 0.2753601562059689,  2020-10-30, 10:28:36
+
+
+Test History Record:
+	Test of the training at 2020-10-23 18:49:13
+	Test loss: 0.199804800633255,  2020-10-30, 10:33:14
+	Average accuracy: 0.29672456797767555,  2020-10-30, 10:33:14
+	Average relative error: 0.5054924447508343,  2020-10-30, 10:33:14
+
+
+Test History Record:
+	Test of the training at 2020-10-23 18:49:13
+	Test loss: 0.20198114895609148,  2020-10-30, 10:36:57
+	Average accuracy: 0.21802184392750187,  2020-10-30, 10:36:57
+	Average relative error: 0.26162061978288176,  2020-10-30, 10:36:57
+
+
+Test History Record:
+	Test of the training at 2020-10-23 18:49:13
+	Test loss: 0.19717642420245082,  2020-10-30, 10:46:10
+	Average accuracy: 0.22949056643345395,  2020-10-30, 10:46:10
+	Average relative error: 0.2992557458967453,  2020-10-30, 10:46:10
+
+
+Test History Record:
+	Test of the training at 2020-10-23 18:49:13
+	Test loss: 0.19904999709734233,  2020-10-30, 10:50:42
+	Average accuracy: 0.2268614925704365,  2020-10-30, 10:50:42
+	Average relative error: 0.2929613272897426,  2020-10-30, 10:50:42
