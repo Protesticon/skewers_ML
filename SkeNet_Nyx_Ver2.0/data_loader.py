@@ -78,13 +78,29 @@ def load_DM(Path, FileName):
 
 
 
-def load_skewers(Path, FileName, train_ousize, DM_param):
+def load_skewers(Path, FileName, train_ousize, DM_param, rotate=False):
     '''
-    To load original skewers data in shape of [number, length in pixels]. Generating each central coordinate [x, y, z] simultaneously. Output: skewers and coordinate.
+    To load original skewers data in shape of [number, length in pixels]. Generating each central coordinate [x, y, z] simultaneously. Output: skewers and coordinate. The rotation only supports 90, 180, 270 deg.
     '''
     # read in skewers and make coordinates of the skewers
     ske = np.load(Path/FileName)
-    ske = (ske.reshape(250, 250, 250).transpose(0,1,2))[::-1,::-1,:]
+    if rotate == False:
+        a = 1
+        b = 1
+    elif rotate == 90:
+        a = -1
+        b = 1
+    elif rotate == 180:
+        a = -1
+        b = -1
+    elif rotate == 270:
+        a = 1
+        b = -1
+    else:
+        raise ValueError('Not supported rotation.')
+    c = int(a!=b)
+    d = int(a==b)
+    ske = (ske.reshape(250, 250, 250).transpose(c,d,2))[::a,::b,:]
     #ske = (ske.reshape(250, 250, 250).transpose(1,0,2))[:,::-1,:]270
     nx, ny, nz = (DM_param.pix / train_ousize).astype('int')
     ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], DM_param.pix)\
