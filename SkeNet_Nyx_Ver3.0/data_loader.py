@@ -48,7 +48,7 @@ def load_DM(Path, FileName):
 
     # basic paramters
     DM_pix  = len(DM)
-    DM_len  = 75*1000 # in kpc/h
+    DM_len  = 31.25*1000 # in kpc/h
     DM_reso = DM_len / DM_pix # in kpc/h
 
     # read in vx field
@@ -100,8 +100,9 @@ def load_skewers(Path, FileName, train_ousize, DM_param, rotate=False):
         raise ValueError('Not supported rotation.')
     c = int(a!=b)
     d = int(a==b)
-    ske = (ske.reshape(250, 250, 250).transpose(c,d,2))[::a,::b,:]
-    #ske = (ske.reshape(250, 250, 250).transpose(1,0,2))[:,::-1,:]270
+    pix = DM_param.pix
+    ske = (ske.reshape(pix, pix, pix).transpose(c,d,2))[::a,::b,:]
+    #ske = (ske.reshape(pix, pix, pix).transpose(1,0,2))[:,::-1,:]270
     nx, ny, nz = (DM_param.pix / train_ousize).astype('int')
     ske = ske.reshape(nx, train_ousize[0], ny, train_ousize[1], DM_param.pix)\
         .transpose(0, 2, 1, 3, 4).reshape(-1, train_ousize[0], train_ousize[1], DM_param.pix)

@@ -62,13 +62,14 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     # k axis
     ske_len = len(test_outp_i)
     vaxis  = np.arange(0, v_end, v_end/ske_len)
-    rvax_t = np.arange(int(ske_len/2))
+    rvax_t = np.arange(int(ske_len/2+1))
     logrv  = np.log10(rvax_t)
     logrv[0] = logrv[1]-10
     rvmin, rvmax = 0, logrv[-1]
     bin_sz = (rvmax-rvmin)/bins
     bins_l = np.arange(rvmin, rvmax, bin_sz).reshape(-1,1)
-    bins_r = np.arange(rvmin+bin_sz, rvmax+bin_sz, bin_sz).reshape(-1,1)
+    #bins_r = np.arange(rvmin+bin_sz, rvmax+bin_sz, bin_sz).reshape(-1,1)
+    bins_r = bins_l + bin_sz
     bin_bl = (logrv>=bins_l) & (logrv<bins_r)
     bin_bl[-1,-1] = True
     rvaxis = np.zeros(bins)
@@ -77,8 +78,8 @@ def test_plot(test_block_i, test_outp_i, test_ske_i,
     test4fft = (test_ske_i -F_mean[0])/F_mean[0]
     #outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
     #test4fft = (test_ske_i -test_ske_i.mean())/test_ske_i.std()
-    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
-    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
+    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2+1)]
+    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2+1)]
     onePS_outp = np.zeros(bins)
     onePS_test = np.zeros(bins)
     for jj in range(bins):
@@ -163,13 +164,14 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
         F_mean, v_end, folder_outp, bins):
     ske_len = len(test_outp_i)
     vaxis  = np.arange(0, v_end, v_end/ske_len)
-    rvax_t = np.arange(int(ske_len/2))
+    rvax_t = np.arange(int(ske_len/2+1))
     logrv  = np.log10(rvax_t)
     logrv[0] = logrv[1]-10
     rvmin, rvmax = 0, logrv[-1]
     bin_sz = (rvmax-rvmin)/bins
     bins_l = np.arange(rvmin, rvmax, bin_sz).reshape(-1,1)
-    bins_r = np.arange(rvmin+bin_sz, rvmax+bin_sz, bin_sz).reshape(-1,1)
+    #bins_r = np.arange(rvmin+bin_sz, rvmax+bin_sz, bin_sz).reshape(-1,1)
+    bins_r = bins_l + bin_sz
     bin_bl = (logrv>=bins_l) & (logrv<bins_r)
     bin_bl[-1,-1] = True
     rvaxis = np.zeros(bins)
@@ -178,8 +180,8 @@ def test_accuracy(test_block_i, test_outp_i, test_ske_i,
     test4fft = (test_ske_i -F_mean[0])/F_mean[0]
     #outp4fft = (test_outp_i-test_outp_i.mean())/test_outp_i.std()
     #test4fft = (test_ske_i -test_ske_i.mean())/test_ske_i.std()
-    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2)]
-    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2)]
+    fft_outp = np.absolute(np.fft.fft(outp4fft))[:int(ske_len/2+1)]
+    fft_test = np.absolute(np.fft.fft(test4fft))[:int(ske_len/2+1)]
     onePS_outp = np.zeros(bins)
     onePS_test = np.zeros(bins)
     for jj in range(bins):

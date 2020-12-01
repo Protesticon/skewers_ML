@@ -512,24 +512,24 @@ def lya_skewers_manual(skewerfile,spac,LBOX,Ng,blk,nblk):
     cofm = np.array(np.meshgrid(ax,ax,np.array([0.]))).T.reshape(-1,3) #all combinations of x and y
     cofm = np.array_split(cofm,nblk)[blk] #split up to preserve memory
     
-    IX=cofm[:,0]
-    IY=cofm[:,1]
-    IZ=np.zeros(IX.shape,dtype=int)
+    IX=cofm[:,0] #amend
+    IY=cofm[:,1] #amend
+    IZ=np.zeros(IX.shape,dtype=int) #amend
     
-    Nskew = len(IX)
+    Nskew = len(IX) #amend
     # coordinates in the box (units Mpc)
-    X=(IX*LBOX/Ng).astype(float)
-    Y=(IY*LBOX/Ng).astype(float)
-    Z=np.zeros(Nskew)
+    X=(IX*LBOX/Ng).astype(float) #amend
+    Y=(IY*LBOX/Ng).astype(float) #amend
+    Z=np.zeros(Nskew) #amend
     
     # projection axis (x,y,z), i.e. z =2, y=1, x = 0)
-    PROJ_AXIS=np.zeros(Nskew,dtype=int) + 2
+    PROJ_AXIS=np.zeros(Nskew,dtype=int) + 2 #amend
     # direction of projection i.e. toward positive or negative values
     PROJ_SIGN=np.ones(Nskew,dtype=int)
     
     skewers = Table([X,Y,Z,IX,IY,IZ,PROJ_AXIS,PROJ_SIGN],names=('XSKEW','YSKEW','ZSKEW','ISKEWX','ISKEWY','ISKEWZ','PROJ_AXIS','PROJ_SIGN'),masked=True)
     # Mask the z-projection directions
-    skewers['ISKEWZ'].mask[:]=True
+    skewers['ISKEWZ'].mask[:]=True #amend
     skewers['ZSKEW'].mask[:]=True
     skewers.write(skewerfile,overwrite=True)
 

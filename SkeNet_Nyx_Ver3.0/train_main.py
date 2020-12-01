@@ -14,17 +14,17 @@ DM_name = ['deltaDM_Nyx_L20_N160_z2.4.npy',
             'vx_DM_Nyx_L20_N160_z2.4.npy',
             'vy_DM_Nyx_L20_N160_z2.4.npy',
             'vz_DM_Nyx_L20_N160_z2.4.npy']
-ske_name_tra = 'spectra_Nyx_z2.4_z.npy'
-ske_name_val = 'spectra_Nyx_z2.4_x.npy'
+ske_name_tra = 'spectra_Nyx_z2.4_x.npy'
+ske_name_val = 'spectra_Nyx_z2.4_y.npy'
 
 
 
 # hyper parameters
-train_len  = 62500 # number of tau blocks
-val_len    = 6250  # number of tau blocks
-test_len   = 0  # number of skewers
-train_insize = np.array([17, 17, 59]) # x, y, z respctively
-train_ousize = np.array([1, 1, 25]) # x, y, z respctively
+train_len  = 28561 # number of tau blocks
+val_len    = 2856  # number of tau blocks
+test_len   = 2856  # number of skewers
+train_insize = np.array([17, 17, 47]) # x, y, z respctively
+train_ousize = np.array([1, 1, 13]) # x, y, z respctively
 batch_size = 50
 learning_rate = 0.0005
 weight_decay = 0.05
@@ -37,11 +37,11 @@ if ~(train_insize%2).all():
 
 # pre-process
 def pre_proc(tau, block):
-    '''1-exp(-tau), 97%'''
+    '''log(tau), 97%'''
     tau_sum = tau.sum(axis=(-1,-2,-3))
     limit = np.percentile(tau_sum, 97)
     bln = tau_sum <= limit#np.ones(len(tau), 'bool')
-    tau = 1-np.exp(-tau)#np.log(tau)#np.log(np.exp(tau)-1)
+    tau = np.log(tau)#np.log(np.exp(tau)-1)
     return (tau[bln],  block[bln])
 
 
@@ -54,13 +54,14 @@ print('Using device:', torch.cuda.get_device_name(device=device.index))
 print('Loading dark matter...')
 DM_general_tra = load_DM(folder, DM_name)
 DM_general_tra[0] = np.log(DM_general_tra[0])
+DM_general_tra = DM_general_tra.transpose(0,2,3,1)[[0,2,3,1]]
 DM_general_val = load_DM(folder, DM_name)
 DM_general_val[0] = np.log(DM_general_val[0])
-DM_general_val = DM_general_val.transpose(0,2,3,1)[[0,2,3,1]]
+DM_general_val = DM_general_val.transpose(0,3,1,2)[[0,3,1,2]]
 
 # basic paramters
 DM_param.pix  = len(DM_general_tra[0])
-DM_param.len  = 75 # in Mpc/h
+DM_param.len  = 31.25 # in Mpc/h
 DM_param.reso = DM_param.len / DM_param.pix # in Mpc/h
 # test 
 if DM_general_tra.shape[1]<train_insize.min():

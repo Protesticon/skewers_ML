@@ -11,7 +11,7 @@ from enigma.tpe.utils import calc_eosfit2, make_tau_skewers
 # Generate Random skewers for calibrating UVB
 Nran = 10  # 1000 ## Hack to make it run quickly
 seed = 1
-DMAX=3000.0
+DMAX = 1e4
 zstr='z2.4'
 sim_path = '~/Documents/skewers/skewers_ML/Nyx'
 out_path = '~/Documents/skewers/skewers_ML/Nyx/' + zstr + '/'

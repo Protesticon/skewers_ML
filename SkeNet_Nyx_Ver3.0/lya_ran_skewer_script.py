@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def lya_ran_skewer_script(spac,dmax,blk,nblk,feed=0,GAMMA_UVB=None):
+def lya_ran_skewer_script(spac,dmax,blk,nblk,ii,feed=0,GAMMA_UVB=None):
 
     import numpy as np
     import h5py
@@ -55,7 +55,7 @@ def lya_ran_skewer_script(spac,dmax,blk,nblk,feed=0,GAMMA_UVB=None):
     print('##########Skewer tau')
     retval=make_tau_skewers(params,skewers,mantaufile,dmax,RESCALE=False,GAMMA_UVB=1.)
     
-    f = open(sim_path/('spectra_Nyx_'+zstr+'_%.1fmpchspacing.dat'%(spac)),'ab')
+    f = open(sim_path/('spectra_Nyx_'+zstr+'_%.1fmpchspacing_%d.dat'%(spac, ii)),'ab')
     np.savetxt(f,Table.read(mantaufile,hdu=2)['TAU'])
     f.close()
     return retval
@@ -63,7 +63,11 @@ def lya_ran_skewer_script(spac,dmax,blk,nblk,feed=0,GAMMA_UVB=None):
     
     
 splits = 40
+
 for block in range(20):
-    lya_ran_skewer_script(0.030517578124999997,1.e4,int(block+20),splits)
+    lya_ran_skewer_script(0.030517578124999997,1.e4,int(block),splits,1)
+    
+for block in range(20):
+    lya_ran_skewer_script(0.030517578124999997,1.e4,int(block+20),splits,2)
 
 
